@@ -1,0 +1,11 @@
+Flask==3.0.0
+nltk==3.8.1
+numpy==1.26.4
+scikit-learn==1.6.1
+tensorflow==2.15.0
+re==2.2.1
+pickle-mixin==1.0.2
+ssl==1.16.0
+sklearn==0.0
+os==1.0.0
+json==2.0.9

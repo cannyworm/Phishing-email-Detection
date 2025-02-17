@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Traffic Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-700 via-purple-600 to-cyan-500 min-h-screen flex items-center justify-center text-white p-6">
+
+    <div class="max-w-2xl w-full bg-white/20 backdrop-blur-2xl rounded-3xl shadow-2xl p-10 text-center border border-white/30">
+        <h1 class="text-4xl font-extrabold mb-6 flex items-center justify-center gap-2">
+            📊 API Traffic Dashboard
+        </h1>
+
+        <!-- Statistics -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="flex flex-col items-center p-6 bg-white/30 rounded-2xl shadow-lg border border-white/20">
+                <h2 class="text-lg font-medium flex items-center gap-1">📩 Total Emails</h2>
+                <p class="text-5xl font-bold" id="totalEmails">0</p>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-green-500/80 rounded-2xl shadow-lg border border-green-300/50">
+                <h2 class="text-lg font-medium flex items-center gap-1">✅ Normal</h2>
+                <p class="text-5xl font-bold" id="normalEmails">0</p>
+            </div>
+            <div class="flex flex-col items-center p-6 bg-red-500/80 rounded-2xl shadow-lg border border-red-300/50">
+                <h2 class="text-lg font-medium flex items-center gap-1">⚠️ Phishing</h2>
+                <p class="text-5xl font-bold" id="phishingEmails">0</p>
+            </div>
+        </div>
+
+        <!-- Pie Chart -->
+        <div class="w-full h-80 mx-auto">
+            <canvas id="trafficChart"></canvas>
+        </div>
+
+        <p class="mt-8 text-sm opacity-90">🔍 Real-time statistics from the API traffic</p>
+
+        <!-- Back to Home Button -->
+        <div class="mt-6 text-center">
+            <a href="/" class="inline-block w-full bg-gray-800 text-white py-3 rounded-xl hover:bg-gray-900 transition-all shadow-lg">🏠 Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        // รับข้อมูลจาก analysis_data ที่ถูกส่งมาจาก FastAPI
+        const analysisData = {{ analysis_data | safe }};
+
+        // อัปเดตตัวเลขสถิติ
+        document.getElementById('totalEmails').textContent = analysisData.total_emails;
+        document.getElementById('normalEmails').textContent = analysisData.normal_count;
+        document.getElementById('phishingEmails').textContent = analysisData.phishing_count;
+
+        // แสดงกราฟวงกลม
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Normal', 'Phishing'],
+                datasets: [{
+                    label: 'Traffic Overview',
+                    data: [analysisData.normal_count, analysisData.phishing_count],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#fff', font: { size: 14 } }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
