@@ -5,33 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Phishing Detector</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: "#1a1a2e",
+                        darkCard: "#16213e",
+                        darkText: "#e0e0e0",
+                        accent: "#ff4c60",
+                        accentHover: "#ff2e44",
+                    },
+                    animation: {
+                        fadeIn: "fadeIn 0.5s ease-in-out",
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 },
+                        },
+                    },
+                },
+            },
+        };
+    </script>
 </head>
-<body class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-600 flex items-center justify-center min-h-screen p-6">
-    <div class="bg-white/20 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl w-full max-w-lg border border-white/30">
-        <h2 class="text-4xl font-extrabold text-white text-center mb-6 flex items-center justify-center gap-2">🔍 Email Phishing Detector</h2>
+<body class="bg-darkBg min-h-screen flex items-center justify-center relative overflow-hidden text-darkText">
 
-        <textarea id="emailText" class="w-full p-4 border border-white/30 bg-white/10 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-blue-400" rows="6" placeholder="Paste your email text here..."></textarea>
+    <!-- Particle Animation -->
+    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
 
-        <button onclick="predictEmail()" class="w-full mt-4 bg-blue-500 text-white py-3 rounded-xl hover:bg-blue-600 transition-all shadow-lg">🚀 Analyze Email</button>
+    <div class="bg-darkCard p-8 rounded-3xl shadow-2xl w-full max-w-lg border border-gray-700">
+        <h2 class="text-4xl font-extrabold text-white text-center mb-6 flex items-center justify-center gap-2">
+            🔍 Email Phishing Detector
+        </h2>
 
-        <div id="result" class="mt-5 text-center text-lg font-semibold text-gray-200">Awaiting email text for analysis...</div>
+        <textarea id="emailText" class="w-full p-4 border border-gray-600 bg-gray-800 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-accent transition-all" rows="6" placeholder="Paste your email text here..."></textarea>
+
+        <button onclick="predictEmail()" class="w-full mt-4 bg-accent text-white py-3 rounded-xl hover:bg-accentHover transition-all shadow-lg active:scale-95">
+            🚀 Analyze Email
+        </button>
+
+        <!-- Result Card -->
+        <div id="result-container" class="hidden mt-5">
+            <div id="result" class="p-4 rounded-xl bg-gray-800 border border-gray-700 shadow-lg text-center text-lg font-semibold text-gray-300 animate-fadeIn">
+                Awaiting email text for analysis...
+            </div>
+        </div>
 
         <div class="mt-6 text-center">
-            <a href="/dashboard" class="inline-block w-full bg-gray-800 text-white py-3 rounded-xl hover:bg-gray-900 transition-all shadow-lg">📊 View Dashboard</a>
+            <a href="/dashboard" class="inline-block w-full bg-gray-700 text-white py-3 rounded-xl hover:bg-gray-600 transition-all shadow-lg">
+                📊 View Dashboard
+            </a>
         </div>
     </div>
 
-    <script>
+    <script defer>
         async function predictEmail() {
             const emailText = document.getElementById("emailText").value;
             const resultDiv = document.getElementById("result");
+            const resultContainer = document.getElementById("result-container");
 
             if (!emailText.trim()) {
                 alert("Please enter email text.");
                 return;
             }
 
-            resultDiv.innerHTML = "<span class='text-blue-300'>Analyzing...</span>";
+            // แสดง card ผลลัพธ์
+            resultContainer.classList.remove("hidden");
+            resultDiv.innerHTML = "<span class='text-blue-400'>🔍 Analyzing...</span>";
 
             try {
                 const response = await fetch("/predict", {
@@ -46,13 +90,39 @@
                     resultDiv.innerHTML = `<span class='text-red-400'>❌ Error: ${data.error}</span>`;
                 } else {
                     const predictionClass = data.prediction.includes("🚨") ? "text-red-400" : "text-green-400";
-                    const risk = data.Risk ? data.Risk : "No risk information";
-                    resultDiv.innerHTML = `<span class='${predictionClass}'>${data.prediction} <span class='text-gray-300'>(${risk})</span></span>`;
+                    const risk = data.Risk || "No risk information";
+                    resultDiv.innerHTML = `<span class='${predictionClass}'>${data.prediction} <span class='text-gray-400'>(${risk})</span></span>`;
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<span class='text-red-400'>❌ Failed to connect to the server.</span>`;
             }
         }
+
+        window.onload = () => {
+            tsParticles.load("tsparticles", {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 800 } },
+                    color: { value: "#ffffff" },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.6 },
+                    size: { value: 3, random: true },
+                    move: { enable: true, speed: 2, direction: "none", out_mode: "out" }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: true, mode: "push" },
+                        resize: true,
+                    },
+                    modes: {
+                        repulse: { distance: 100, duration: 0.4 },
+                        push: { particles_nb: 4 },
+                    }
+                },
+                retina_detect: true,
+            });
+        };
     </script>
 </body>
 </html>
