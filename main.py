@@ -167,4 +167,4 @@ async def batch_predict(request: BatchEmailRequest):
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 if __name__ == "__main__":
-    uvicorn.run("test:app", host="0.0.0.0", port=5001, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=5001, reload=True)
