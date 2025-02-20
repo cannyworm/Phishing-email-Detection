@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Prediction History</title>
+    <title>Email Prediction History | PhishGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
@@ -14,44 +14,105 @@
             theme: {
                 extend: {
                     colors: {
-                        darkBg: "#1a1a2e",
-                        darkCard: "#16213e",
-                        darkText: "#e0e0e0",
+                        darkBg: "#0f172a",
+                        darkCard: "#1e293b",
+                        darkText: "#e2e8f0",
                         accent: "#ff4c60",
                         accentHover: "#ff2e44",
+                        lightBg: "#f8fafc",
+                        lightCard: "#ffffff",
+                        lightText: "#334155",
                     },
                     animation: {
                         fadeIn: "fadeIn 0.5s ease-in-out",
+                        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
                     },
                     keyframes: {
                         fadeIn: {
                             '0%': { opacity: 0 },
                             '100%': { opacity: 1 },
                         },
+                        pulse: {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.5 },
+                        },
                     },
                 },
             },
         };
     </script>
+    <style>
+        /* For Webkit browsers */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Table responsiveness */
+        @media (max-width: 768px) {
+            .responsive-table {
+                display: block;
+            }
+            .responsive-table .table-row {
+                display: grid;
+                grid-template-columns: 1fr;
+                margin-bottom: 1rem;
+                border: 1px solid rgba(229, 231, 235, 0.5);
+                border-radius: 0.5rem;
+                overflow: hidden;
+            }
+            .responsive-table .table-cell {
+                display: flex;
+                padding: 0.75rem;
+                border-bottom: 1px solid rgba(229, 231, 235, 0.2);
+            }
+            .responsive-table .table-cell:last-child {
+                border-bottom: none;
+            }
+            .responsive-table .cell-header {
+                font-weight: 600;
+                min-width: 40%;
+                margin-right: 0.5rem;
+            }
+            .responsive-table .table-header {
+                display: none;
+            }
+        }
+    </style>
 </head>
-<body class="bg-darkBg min-h-screen flex items-center justify-center relative overflow-hidden text-darkText p-4">
-    <nav class="fixed top-0 left-0 right-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
+<body class="dark bg-darkBg min-h-screen flex flex-col text-darkText relative overflow-x-hidden">
+    <!-- Particles background -->
+    <div id="tsparticles" class="fixed inset-0 -z-10"></div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <span class="text-white text-xl font-bold">🛡️ PhishGuard</span>
             </div>
             <div class="flex items-center gap-3">
-                <a href="/dashboard" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
+                <a href="/dashboard" class="flex items-center gap-1 text-sm hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    Dashboard
+                    <span class="hidden sm:inline">Dashboard</span>
                 </a>
-                <a href="https://github.com/apolloS125/Phishing-email-Detection" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
+                <a href="https://github.com/apolloS125/Phishing-email-Detection" class="flex items-center gap-1 text-sm hover:text-white transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    About
+                    <span class="hidden sm:inline">About</span>
                 </a>
                 <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-accent" id="theme-toggle">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,32 +122,314 @@
             </div>
         </div>
     </nav>
-    <div class="w-full max-w-6xl bg-white shadow-lg rounded-lg p-6">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">📜 Email Prediction History</h1>
-        <div class="overflow-x-auto">
-            <table class="table-auto w-full border-collapse border border-gray-300">
-                <thead>
-                    <tr class="bg-gray-800 text-white">
-                        <th class="px-4 py-3 border border-gray-300">Original Text</th>
-                        <th class="px-4 py-3 border border-gray-300">Translated Text</th>
-                        <th class="px-4 py-3 border border-gray-300">Language</th>
-                        <th class="px-4 py-3 border border-gray-300">Prediction</th>
-                        <th class="px-4 py-3 border border-gray-300">Risk</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in history %}
-                    <tr class="border-b border-gray-300 hover:bg-gray-100 transition">
-                        <td class="px-4 py-3 border border-gray-300 text-gray-700">{{ item.original_text }}</td>
-                        <td class="px-4 py-3 border border-gray-300 text-gray-700">{{ item.translated_text }}</td>
-                        <td class="px-4 py-3 border border-gray-300 text-gray-700">{{ item.original_language }}</td>
-                        <td class="px-4 py-3 border border-gray-300 font-bold {% if '🚨' in item.prediction %}text-red-500{% else %}text-green-500{% endif %}">{{ item.prediction }}</td>
-                        <td class="px-4 py-3 border border-gray-300 text-gray-700">{{ item.Risk }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+    <!-- Main Content -->
+    <main class="flex-1 container mx-auto px-4 py-6 animate-fadeIn">
+        <div class="w-full bg-darkCard shadow-lg rounded-lg p-4 sm:p-6 border border-gray-700">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
+                    <span class="text-accent">📜</span> Email Prediction History
+                </h1>
+                <div class="flex mt-2 sm:mt-0">
+                    <div class="relative">
+                        <input type="text" placeholder="Search emails..." 
+                               class="py-1 px-3 pr-10 rounded-lg text-sm bg-gray-800 border border-gray-700 focus:ring-2 focus:ring-accent focus:outline-none w-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-400 text-sm font-medium">Total Scans</p>
+                            <p class="text-2xl font-bold mt-1">1,248</p>
+                        </div>
+                        <div class="p-2 bg-blue-500 bg-opacity-20 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-green-400 text-xs mt-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                        8.2% increase this week
+                    </p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-400 text-sm font-medium">Phishing Detected</p>
+                            <p class="text-2xl font-bold mt-1">342</p>
+                        </div>
+                        <div class="p-2 bg-red-500 bg-opacity-20 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-red-400 text-xs mt-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                        12.5% increase this week
+                    </p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-400 text-sm font-medium">Clean Emails</p>
+                            <p class="text-2xl font-bold mt-1">906</p>
+                        </div>
+                        <div class="p-2 bg-green-500 bg-opacity-20 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-green-400 text-xs mt-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                        6.8% increase this week
+                    </p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-gray-400 text-sm font-medium">Risk Score (Avg)</p>
+                            <p class="text-2xl font-bold mt-1">68%</p>
+                        </div>
+                        <div class="p-2 bg-yellow-500 bg-opacity-20 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-yellow-400 text-xs mt-2 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                        3.2% increase this week
+                    </p>
+                </div>
+            </div>
+
+            <!-- Table for desktop -->
+            <div class="hidden md:block overflow-x-auto rounded-lg border border-gray-700">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead>
+                        <tr class="bg-gray-800">
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Original Text</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Translated Text</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Language</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Prediction</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Risk</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-gray-900 divide-y divide-gray-800">
+                        {% for item in history %}
+                        <tr class="hover:bg-gray-800 transition-colors">
+                            <td class="px-4 py-3 text-sm max-w-xs truncate">{{ item.original_text }}</td>
+                            <td class="px-4 py-3 text-sm max-w-xs truncate">{{ item.translated_text }}</td>
+                            <td class="px-4 py-3 text-sm">{{ item.original_language }}</td>
+                            <td class="px-4 py-3 text-sm font-medium">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if '🚨' in item.prediction %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                    {{ item.prediction }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                    <div class="{% if item.Risk|float > 80 %}bg-red-500{% elif item.Risk|float > 50 %}bg-yellow-500{% else %}bg-green-500{% endif %} h-2 rounded-full" style="width: {{ item.Risk }}%"></div>
+                                </div>
+                                <span class="text-xs mt-1 inline-block">{{ item.Risk }}%</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <div class="flex space-x-2">
+                                    <button class="text-indigo-400 hover:text-indigo-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                    <button class="text-red-400 hover:text-red-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile responsive version -->
+            <div class="md:hidden responsive-table">
+                <div class="table-header">
+                    <div class="table-cell">Original Text</div>
+                    <div class="table-cell">Translated Text</div>
+                    <div class="table-cell">Language</div>
+                    <div class="table-cell">Prediction</div>
+                    <div class="table-cell">Risk</div>
+                </div>
+                
+                {% for item in history %}
+                <div class="table-row bg-gray-900 mb-4 animate-fadeIn">
+                    <div class="table-cell">
+                        <div class="cell-header">Original Text</div>
+                        <div class="cell-content max-h-20 overflow-y-auto text-sm">{{ item.original_text }}</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="cell-header">Translated Text</div>
+                        <div class="cell-content max-h-20 overflow-y-auto text-sm">{{ item.translated_text }}</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="cell-header">Language</div>
+                        <div class="cell-content text-sm">{{ item.original_language }}</div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="cell-header">Prediction</div>
+                        <div class="cell-content">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if '🚨' in item.prediction %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ item.prediction }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="table-cell">
+                        <div class="cell-header">Risk</div>
+                        <div class="cell-content">
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="{% if item.Risk|float > 80 %}bg-red-500{% elif item.Risk|float > 50 %}bg-yellow-500{% else %}bg-green-500{% endif %} h-2 rounded-full" style="width: {{ item.Risk }}%"></div>
+                            </div>
+                            <span class="text-xs mt-1 inline-block">{{ item.Risk }}%</span>
+                        </div>
+                    </div>
+                    <div class="table-cell bg-gray-800">
+                        <div class="flex justify-around">
+                            <button class="flex items-center justify-center p-2 rounded-full hover:bg-gray-700 transition-colors text-indigo-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                            <button class="flex items-center justify-center p-2 rounded-full hover:bg-gray-700 transition-colors text-red-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-6 flex items-center justify-between">
+                <div class="text-sm text-gray-400">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">54</span> results
+                </div>
+                <div class="flex space-x-1">
+                    <button class="px-3 py-1 rounded-md bg-gray-800 text-gray-400 hover:bg-gray-700">Previous</button>
+                    <button class="px-3 py-1 rounded-md bg-gray-700 text-white">1</button>
+                    <button class="px-3 py-1 rounded-md bg-gray-800 text-gray-400 hover:bg-gray-700">2</button>
+                    <button class="px-3 py-1 rounded-md bg-gray-800 text-gray-400 hover:bg-gray-700">3</button>
+                    <button class="px-3 py-1 rounded-md bg-gray-800 text-gray-400 hover:bg-gray-700">Next</button>
+                </div>
+            </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="py-4 text-center text-sm text-gray-500">
+        <p>© 2025 PhishGuard | <a href="#" class="hover:text-accent">Privacy Policy</a> | <a href="#" class="hover:text-accent">Terms of Service</a></p>
+    </footer>
+
+    <script>
+        // Particles background
+        window.onload = () => {
+            // Adjust particle count based on device
+            const isMobile = window.innerWidth < 768;
+            
+            tsParticles.load("tsparticles", {
+                fullScreen: false,
+                particles: {
+                    number: { 
+                        value: isMobile ? 30 : 80, 
+                        density: { enable: true, value_area: 800 } 
+                    },
+                    color: { value: "#4f46e5" },
+                    shape: { type: "circle" },
+                    opacity: { 
+                        value: 0.2,
+                        random: true,
+                        anim: { enable: true, speed: 0.5, opacity_min: 0.1, sync: false }
+                    },
+                    size: { 
+                        value: 3, 
+                        random: true,
+                        anim: { enable: true, speed: 2, size_min: 0.1, sync: false }
+                    },
+                    line_linked: {
+                        enable: true,
+                        distance: 150,
+                        color: "#3b82f6",
+                        opacity: 0.1,
+                        width: 1
+                    },
+                    move: { 
+                        enable: true, 
+                        speed: 0.5, 
+                        direction: "none", 
+                        random: true, 
+                        out_mode: "out",
+                        bounce: false 
+                    }
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "bubble" },
+                        onclick: { enable: true, mode: "push" },
+                        resize: true,
+                    },
+                    modes: {
+                        bubble: { 
+                            distance: 100, 
+                            size: 5,
+                            duration: 2,
+                            opacity: 0.8,
+                            speed: 3
+                        },
+                        push: { particles_nb: 4 },
+                    }
+                },
+                retina_detect: true,
+            });
+        };
+
+        // Theme toggle functionality
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('light');
+            if (document.body.classList.contains('light')) {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+                document.body.style.backgroundColor = '#f8fafc';
+                document.body.style.color = '#334155';
+            } else {
+                document.body.classList.remove('light');
+                document.body.classList.add('dark');
+                document.body.style.backgroundColor = '#0f172a';
+                document.body.style.color = '#e2e8f0';
+            }
+        });
+    </script>
 </body>
 </html>
