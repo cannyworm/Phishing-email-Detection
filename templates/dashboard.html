@@ -39,6 +39,32 @@
 </head>
 
 <body class="bg-darkBg min-h-screen flex items-center justify-center relative overflow-hidden text-darkText p-4">
+    <nav class="fixed top-0 left-0 right-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-white text-xl font-bold">🛡️ PhishGuard</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/dashboard" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="https://github.com/apolloS125/Phishing-email-Detection" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    About
+                </a>
+                <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-accent" id="theme-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
     <div id="tsparticles" class="absolute inset-0 -z-10"></div>
 
     <div class="bg-darkCard p-4 sm:p-8 rounded-xl sm:rounded-3xl shadow-2xl w-full max-w-3xl border border-gray-700 text-center relative animate-fadeIn">
