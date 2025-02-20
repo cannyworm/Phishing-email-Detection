@@ -129,7 +129,7 @@ async def predict_email(request: EmailRequest):
 
 @app.get("/history")
 async def get_history(request: Request):
-    return templates.TemplateResponse("history.html", {"request": request, "history": analysis_data["history"]})
+    return templates.TemplateResponse("history.html", {"request": request, "history": analysis_data["history"],"analysis_data": json.dumps(analysis_data)})
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=5001, reload=True)
