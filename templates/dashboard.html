@@ -1,36 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Traffic Dashboard</title>
-
-    <!-- Tailwind CSS -->
+    <title>PhishGuard Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
+    
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        darkBg: "#1a1a2e",
-                        darkCard: "#16213e",
-                        darkText: "#e0e0e0",
-                        accent: "#ff4c60",
-                        accentHover: "#ff2e44",
-                    },
-                    animation: {
-                        fadeIn: "fadeIn 0.5s ease-in-out",
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: 0 },
-                            '100%': { opacity: 1 },
-                        },
+                        darkBg: "#0f172a",
+                        darkCard: "#1e293b",
                     },
                 },
             },
@@ -38,126 +22,113 @@
     </script>
 </head>
 
-<body class="bg-darkBg min-h-screen flex items-center justify-center relative overflow-hidden text-darkText p-4">
-    <nav class="fixed top-0 left-0 right-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
+<body class="bg-darkBg text-white">
+    <!-- Simple navbar -->
+    <nav class="bg-darkCard shadow-md px-6 py-4">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-white text-xl font-bold">🛡️ PhishGuard</span>
+            <div class="flex items-center">
+                <span class="text-xl font-bold">🛡️ PhishGuard</span>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="/dashboard" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Dashboard
-                </a>
-                <a href="https://github.com/apolloS125/Phishing-email-Detection" class="hidden sm:flex items-center gap-1 text-sm hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    About
-                </a>
-                <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-accent" id="theme-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
+            <div>
+                <a href="https://github.com/apolloS125/Phishing-email-Detection" class="text-sm hover:text-blue-400">GitHub</a>
             </div>
         </div>
     </nav>
-    <div id="tsparticles" class="absolute inset-0 -z-10"></div>
 
-    <div class="bg-darkCard p-4 sm:p-8 rounded-xl sm:rounded-3xl shadow-2xl w-full max-w-3xl border border-gray-700 text-center relative animate-fadeIn">
-        <h1 class="text-2xl sm:text-4xl font-extrabold text-white mb-4 sm:mb-6">📊 API Traffic Dashboard</h1>
+    <!-- Background particles (minimal setup) -->
+    <div id="tsparticles" class="fixed inset-0 -z-10"></div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
-            <div class="flex flex-col items-center p-3 sm:p-6 bg-gray-800 rounded-xl sm:rounded-2xl border border-gray-700 shadow-lg">
-                <h2 class="text-base sm:text-lg font-medium">📩 Total Emails</h2>
-                <p class="text-3xl sm:text-5xl font-bold text-blue-300" id="totalEmails">0</p>
+    <!-- Main content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-darkCard p-6 rounded-xl shadow-lg mb-8">
+            <h1 class="text-2xl font-bold mb-2">📊 Email Security Dashboard</h1>
+            <p class="text-gray-400">Real-time phishing detection statistics</p>
+        </div>
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total emails -->
+            <div class="bg-darkCard p-6 rounded-xl shadow-lg">
+                <h2 class="text-lg font-medium text-gray-400">Total Emails</h2>
+                <p class="text-4xl font-bold text-blue-400 mt-2" id="totalEmails">0</p>
             </div>
-            <div class="flex flex-col items-center p-3 sm:p-6 bg-green-600 rounded-xl sm:rounded-2xl shadow-lg">
-                <h2 class="text-base sm:text-lg font-medium">✅ Normal</h2>
-                <p class="text-3xl sm:text-5xl font-bold text-white" id="normalEmails">0</p>
+            
+            <!-- Normal emails -->
+            <div class="bg-green-900/30 p-6 rounded-xl shadow-lg border border-green-700/30">
+                <h2 class="text-lg font-medium text-gray-300">Normal Emails</h2>
+                <p class="text-4xl font-bold text-green-400 mt-2" id="normalEmails">0</p>
             </div>
-            <div class="flex flex-col items-center p-3 sm:p-6 bg-red-600 rounded-xl sm:rounded-2xl shadow-lg">
-                <h2 class="text-base sm:text-lg font-medium">⚠️ Phishing</h2>
-                <p class="text-3xl sm:text-5xl font-bold text-white" id="phishingEmails">0</p>
+            
+            <!-- Phishing emails -->
+            <div class="bg-red-900/30 p-6 rounded-xl shadow-lg border border-red-700/30">
+                <h2 class="text-lg font-medium text-gray-300">Phishing Detected</h2>
+                <p class="text-4xl font-bold text-red-400 mt-2" id="phishingEmails">0</p>
             </div>
         </div>
 
-        <div class="w-full h-60 sm:h-80 mx-auto flex items-center justify-center">
-            <canvas id="trafficChart"></canvas>
+        <!-- Chart -->
+        <div class="bg-darkCard p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-lg font-medium mb-4">Distribution Analysis</h2>
+            <div class="h-64">
+                <canvas id="trafficChart"></canvas>
+            </div>
         </div>
 
-        <p class="mt-4 sm:mt-8 text-xs sm:text-sm opacity-80">🔍 Real-time statistics from the API traffic</p>
-
-        <div class="mt-4 sm:mt-6">
-            <a href="/" class="inline-block w-full bg-accent py-2 sm:py-3 rounded-lg sm:rounded-xl text-white hover:bg-accentHover transition-all shadow-lg text-sm sm:text-base">🏠 Back to Home</a>
+        <!-- Back button -->
+        <div class="text-center mt-8">
+            <a href="/" class="inline-block bg-blue-600 hover:bg-blue-700 transition-colors px-6 py-2 rounded-lg">
+                🏠 Back to Home
+            </a>
         </div>
     </div>
 
     <script>
-        // รับข้อมูลจาก analysis_data ที่ถูกส่งมาจาก FastAPI
-        const analysisData = {{ analysis_data | safe }};
+        // Initialize with data from backend or fallback to demo data
+        const analysisData = {{ analysis_data | safe }} || {
+            total_emails: 5872,
+            normal_count: 5106,
+            phishing_count: 766
+        };
 
+        // Setup particles (minimal config)
         window.onload = () => {
             tsParticles.load("tsparticles", {
                 particles: {
-                    number: { value: window.innerWidth < 768 ? 50 : 100, density: { enable: true, value_area: 800 } },
+                    number: { value: 50 },
                     color: { value: "#ffffff" },
-                    shape: { type: "circle" },
-                    opacity: { value: 0.7 },
-                    size: { value: 2, random: true },
-                    move: { enable: true, speed: 1, direction: "none", out_mode: "out" }
-                },
-                interactivity: {
-                    detect_on: "canvas",
-                    events: {
-                        onhover: { enable: true, mode: "repulse" },
-                        onclick: { enable: true, mode: "push" },
-                        resize: true,
-                    },
-                    modes: {
-                        repulse: { distance: 100, duration: 0.4 },
-                        push: { particles_nb: 4 },
-                    }
-                },
-                retina_detect: true,
+                    opacity: { value: 0.5 },
+                    size: { value: 2 },
+                    move: { enable: true, speed: 1 }
+                }
             });
 
-            document.getElementById('totalEmails').textContent = analysisData.total_emails;
-            document.getElementById('normalEmails').textContent = analysisData.normal_count;
-            document.getElementById('phishingEmails').textContent = analysisData.phishing_count;
+            // Update stats counters
+            document.getElementById('totalEmails').textContent = analysisData.total_emails.toLocaleString();
+            document.getElementById('normalEmails').textContent = analysisData.normal_count.toLocaleString();
+            document.getElementById('phishingEmails').textContent = analysisData.phishing_count.toLocaleString();
 
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: { 
-                            color: '#fff',
-                            font: { 
-                                size: window.innerWidth < 768 ? 12 : 14 
-                            } 
-                        },
-                        position: window.innerWidth < 768 ? 'bottom' : 'right'
-                    }
-                }
-            };
-
+            // Create doughnut chart
             const ctx = document.getElementById('trafficChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Normal', 'Phishing'],
+                    labels: ['Safe Emails', 'Phishing Attempts'],
                     datasets: [{
-                        label: 'Traffic Overview',
                         data: [analysisData.normal_count, analysisData.phishing_count],
                         backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 2
+                        borderWidth: 0
                     }]
                 },
-                options: chartOptions
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#e2e8f0' }
+                        }
+                    }
+                }
             });
         };
     </script>
