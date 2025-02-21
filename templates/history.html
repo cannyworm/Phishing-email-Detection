@@ -386,6 +386,7 @@
     <script>
         // Store history data for client-side operations
         const historyData = {{ history| tojson | safe }};
+        const analysisData = {{ analysis_data | safe }};
 
         // Calculate average risk from history data
         const calculateAverageRisk = () => {
@@ -396,7 +397,6 @@
             }, 0);
             return (totalRisk / historyData.length).toFixed(1) + '%';
         };
-        const analysisData = {{ analysis_data | safe }};
 
         // Set average risk on load
         document.getElementById('avg-risk').textContent = calculateAverageRisk();
