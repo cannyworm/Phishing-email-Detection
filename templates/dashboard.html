@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PhishGuard Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
     
     <script>
@@ -29,13 +29,14 @@
             <div class="flex items-center">
                 <span class="text-xl font-bold">🛡️ PhishGuard</span>
             </div>
-            <div>
+            <div class="flex space-x-4">
+                <a href="/history" class="text-sm hover:text-blue-400">Detection History</a>
                 <a href="https://github.com/apolloS125/Phishing-email-Detection" class="text-sm hover:text-blue-400">GitHub</a>
             </div>
         </div>
     </nav>
 
-    <!-- Background particles (minimal setup) -->
+    <!-- Background particles -->
     <div id="tsparticles" class="fixed inset-0 -z-10"></div>
 
     <!-- Main content -->
@@ -66,11 +67,50 @@
             </div>
         </div>
 
-        <!-- Chart -->
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Distribution Chart -->
+            <div class="bg-darkCard p-6 rounded-xl shadow-lg">
+                <h2 class="text-lg font-medium mb-4">Distribution Analysis</h2>
+                <div class="h-64">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Language Distribution Chart -->
+            <div class="bg-darkCard p-6 rounded-xl shadow-lg">
+                <h2 class="text-lg font-medium mb-4">Language Distribution</h2>
+                <div class="h-64">
+                    <canvas id="languageChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Risk Level Distribution -->
         <div class="bg-darkCard p-6 rounded-xl shadow-lg mb-8">
-            <h2 class="text-lg font-medium mb-4">Distribution Analysis</h2>
+            <h2 class="text-lg font-medium mb-4">Risk Level Distribution</h2>
             <div class="h-64">
-                <canvas id="trafficChart"></canvas>
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Recent Detections -->
+        <div class="bg-darkCard p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-lg font-medium mb-4">Recent Detections</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="text-left py-2 text-sm text-gray-400">Language</th>
+                            <th class="text-left py-2 text-sm text-gray-400">Text Sample</th>
+                            <th class="text-center py-2 text-sm text-gray-400">Result</th>
+                            <th class="text-right py-2 text-sm text-gray-400">Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentDetections">
+                        <!-- Will be populated dynamically -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -83,22 +123,69 @@
     </div>
 
     <script>
-        // Initialize with data from backend or fallback to demo data
+        // Initialize with data from backend
         const analysisData = {{ analysis_data | safe }} || {
-            total_emails: 5872,
-            normal_count: 5106,
-            phishing_count: 766
+            total_emails: 0,
+            normal_count: 0,
+            phishing_count: 0,
+            history: []
         };
-
-        // Setup particles (minimal config)
-        window.onload = () => {
+        
+        // Extract language data from history
+        function getLanguageData() {
+            const langCount = {};
+            
+            analysisData.history.forEach(entry => {
+                const lang = entry.original_language || "unknown";
+                langCount[lang] = (langCount[lang] || 0) + 1;
+            });
+            
+            // Convert to arrays for Chart.js
+            const labels = Object.keys(langCount);
+            const data = Object.values(langCount);
+            
+            return { labels, data };
+        }
+        
+        // Extract risk data from history
+        function getRiskData() {
+            // Create risk buckets
+            const riskBuckets = {
+                "Very Low (0-20%)": 0,
+                "Low (20-40%)": 0,
+                "Medium (40-60%)": 0, 
+                "High (60-80%)": 0,
+                "Very High (80-100%)": 0
+            };
+            
+            analysisData.history.forEach(entry => {
+                // Parse risk percentage from string
+                const riskText = entry.Risk || "0%";
+                const riskValue = parseFloat(riskText.replace('%', ''));
+                
+                // Assign to appropriate bucket
+                if (riskValue <= 20) riskBuckets["Very Low (0-20%)"]++;
+                else if (riskValue <= 40) riskBuckets["Low (20-40%)"]++;
+                else if (riskValue <= 60) riskBuckets["Medium (40-60%)"]++;
+                else if (riskValue <= 80) riskBuckets["High (60-80%)"]++;
+                else riskBuckets["Very High (80-100%)"]++;
+            });
+            
+            return {
+                labels: Object.keys(riskBuckets),
+                data: Object.values(riskBuckets)
+            };
+        }
+        
+        // Setup particles
+        document.addEventListener('DOMContentLoaded', () => {
             tsParticles.load("tsparticles", {
                 particles: {
                     number: { value: 50 },
                     color: { value: "#ffffff" },
-                    opacity: { value: 0.5 },
+                    opacity: { value: 0.3 },
                     size: { value: 2 },
-                    move: { enable: true, speed: 1 }
+                    move: { enable: true, speed: 0.5 }
                 }
             });
 
@@ -107,12 +194,12 @@
             document.getElementById('normalEmails').textContent = analysisData.normal_count.toLocaleString();
             document.getElementById('phishingEmails').textContent = analysisData.phishing_count.toLocaleString();
 
-            // Create doughnut chart
-            const ctx = document.getElementById('trafficChart').getContext('2d');
-            new Chart(ctx, {
+            // Create doughnut chart for email distribution
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            new Chart(trafficCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Safe Emails', 'Phishing Attempts'],
+                    labels: ['Normal Emails', 'Phishing Attempts'],
                     datasets: [{
                         data: [analysisData.normal_count, analysisData.phishing_count],
                         backgroundColor: ['#10b981', '#ef4444'],
@@ -130,7 +217,112 @@
                     }
                 }
             });
-        };
+            
+            // Create language distribution chart
+            const languageData = getLanguageData();
+            const languageCtx = document.getElementById('languageChart').getContext('2d');
+            new Chart(languageCtx, {
+                type: 'pie',
+                data: {
+                    labels: languageData.labels,
+                    datasets: [{
+                        data: languageData.data,
+                        backgroundColor: [
+                            '#3b82f6', '#8b5cf6', '#ec4899', 
+                            '#f87171', '#fb923c', '#facc15',
+                            '#4ade80', '#2dd4bf', '#38bdf8'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#e2e8f0' }
+                        }
+                    }
+                }
+            });
+            
+            // Create risk distribution chart
+            const riskData = getRiskData();
+            const riskCtx = document.getElementById('riskChart').getContext('2d');
+            new Chart(riskCtx, {
+                type: 'bar',
+                data: {
+                    labels: riskData.labels,
+                    datasets: [{
+                        label: 'Number of Emails',
+                        data: riskData.data,
+                        backgroundColor: [
+                            '#22c55e', '#84cc16', '#facc15', 
+                            '#f97316', '#ef4444'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                precision: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Populate recent detections table
+            const recentDetections = document.getElementById('recentDetections');
+            const recentEntries = analysisData.history.slice(-5).reverse(); // Get last 5 entries
+            
+            recentEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                const textSample = entry.original_text.length > 50 ? 
+                    entry.original_text.substring(0, 50) + '...' : 
+                    entry.original_text;
+                
+                const resultColor = entry.prediction.includes('Detected') ? 
+                    'text-red-400' : 'text-green-400';
+                
+                const riskValue = parseFloat(entry.Risk.replace('%', ''));
+                let riskColor = 'text-green-400';
+                if (riskValue > 80) riskColor = 'text-red-500';
+                else if (riskValue > 60) riskColor = 'text-orange-500';
+                else if (riskValue > 40) riskColor = 'text-yellow-500';
+                
+                row.innerHTML = `
+                    <td class="py-2">${entry.original_language}</td>
+                    <td class="py-2">${textSample}</td>
+                    <td class="text-center py-2 ${resultColor}">${entry.prediction}</td>
+                    <td class="text-right py-2 ${riskColor} font-bold">${entry.Risk}</td>
+                `;
+                recentDetections.appendChild(row);
+            });
+        });
     </script>
 </body>
 </html>
