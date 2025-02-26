@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 import uvicorn
@@ -16,6 +16,7 @@ from langdetect import detect, DetectorFactory
 from deep_translator import GoogleTranslator
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field
+import requests
 
 # ตั้งค่า Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -65,7 +66,8 @@ def clean_text(text):
 def detect_language(text):
     try:
         return detect(text[:1000])  # ใช้แค่ 1000 ตัวอักษรแรกเพื่อความเร็ว
-    except:
+    except Exception as e:
+        logger.error(f"Language detection error: {e}")
         return "unknown"
 
 # แปลข้อความเป็นภาษาอังกฤษ
@@ -74,14 +76,42 @@ def translate_to_english(text, source_lang):
     if source_lang == "en" or source_lang == "unknown":
         return text
     try:
-        # จำกัดขนาดข้อความสำหรับการแปล
         limited_text = text[:5000] if len(text) > 5000 else text
         return GoogleTranslator(source=source_lang, target="en").translate(limited_text)
     except Exception as e:
         logger.error(f"Translation error: {e}")
         return text
 
-# Process a single email
+# ดึง URL จากข้อความ
+def extract_urls(text):
+    url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
+    return re.findall(url_pattern, text)
+
+def check_url_safety(url):
+    api_key = "AIzaSyCXwc7uusAarQFmMj_aleeMsTCXK5SuzsY"
+    gsb_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
+    
+    payload = {
+        "client": {"clientId": "your-app", "clientVersion": "1.0"},
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+    try:
+        response = requests.post(gsb_url, json=payload, params={"key": api_key})
+        response.raise_for_status()  # ตรวจสอบ HTTP errors
+        result = response.json()
+        print(result)
+        # ถ้ามี key "matches" ใน result แสดงว่ามี URL อันตราย
+        return "matches" in result
+    except requests.RequestException as e:
+        logger.error(f"Error checking URL safety for {url}: {e}")
+        return False
+
+# อัปเดตการวิเคราะห์อีเมล
 def process_email(email_text: str) -> Dict[str, Any]:
     detected_lang = detect_language(email_text)
     translated_text = email_text if detected_lang == "en" else translate_to_english(email_text, detected_lang)
@@ -89,12 +119,26 @@ def process_email(email_text: str) -> Dict[str, Any]:
     text_vector = vectorizer.transform([cleaned_text]).toarray()
     prediction = float(model.predict(text_vector)[0][0])
     
+    # ดึงและตรวจสอบ URL
+    urls = extract_urls(email_text)
+    malicious_urls = [url for url in urls if check_url_safety(url)]
+    
+    # หากมี Malicious URL ให้จัดว่าเป็น Scam ทันที
+    is_scam = len(malicious_urls) > 0 or prediction > 0.7
+    print(f"Prediction: {prediction}, Malicious URLs: {malicious_urls}")
     result = {
-        "original_text": email_text[:500] + "..." if len(email_text) > 500 else email_text,
-        "translated_text": translated_text[:500] + "..." if detected_lang != "en" and len(translated_text) > 500 else translated_text if detected_lang != "en" else "N/A",
+        "original_text": email_text[:100] + "..." if len(email_text) > 100 else email_text,
+        "translated_text": (
+            translated_text[:100] + "..." 
+            if detected_lang != "en" and len(translated_text) > 100 
+            else translated_text if detected_lang != "en" 
+            else "N/A"
+        ),
         "original_language": detected_lang,
-        "prediction": "🚨 Social Engineering Detected" if prediction > 0.7 else "✅ Normal Message",
-        "Risk": f"{round(prediction * 100, 2)}%"
+        "prediction": "🚨 Social Engineering Detected" if is_scam else "✅ Normal Message",
+        "Risk": "100.00%" if len(malicious_urls) > 0 else f"{round(prediction * 100, 2)}%",
+        "urls_found": urls,
+        "malicious_urls": malicious_urls
     }
     
     return result

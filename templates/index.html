@@ -64,11 +64,6 @@
                     </svg>
                     About
                 </a>
-                <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-accent" id="theme-toggle">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                </button>
             </div>
         </div>
     </nav>
@@ -101,13 +96,6 @@
             <span id="button-text">Analyze Email</span>
         </button>
 
-        <!-- Result Card -->
-        <div id="result-container" class="hidden mt-4 sm:mt-5 animate__animated animate__fadeIn">
-            <div id="result" class="p-3 sm:p-4 rounded-xl bg-gray-800 bg-opacity-60 border border-gray-700 shadow-lg text-center text-base sm:text-lg font-medium text-gray-300">
-                Awaiting email text for analysis...
-            </div>
-        </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 sm:mt-6">
             <a href="/dashboard" class="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white py-2 sm:py-3 rounded-xl transition-all shadow-lg text-sm sm:text-base">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,14 +116,123 @@
         </div>
     </div>
 
+    <!-- Modal Result -->
+    <div id="result-modal" class="fixed inset-0 z-50 hidden animate__animated">
+        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl p-4">
+            <div class="bg-darkCard rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
+                <!-- Modal Header -->
+                <div id="modal-header" class="p-4 border-b border-gray-700 flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span id="result-icon">⏳</span>
+                        <span id="result-title">Analysis Result</span>
+                    </h3>
+                    <button id="close-modal" class="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="p-5">
+                    <!-- Main Result -->
+                    <div id="result-main" class="mb-6 p-4 rounded-xl bg-gray-800 bg-opacity-60 border border-gray-700">
+                        <div class="flex flex-col items-center justify-center gap-3 text-center">
+                            <div id="result-animation" class="w-20 h-20 flex items-center justify-center rounded-full bg-gray-700 animate-pulse">
+                                <span class="text-3xl">⏳</span>
+                            </div>
+                            <h4 id="result-message" class="text-xl font-bold text-white">Analyzing...</h4>
+                            <p id="result-description" class="text-gray-400 text-sm">Please wait while we scan your email</p>
+                        </div>
+                    </div>
+                    
+                    <!-- URL Analysis -->
+                    <div id="url-analysis" class="mb-5 hidden">
+                        <h4 class="font-medium text-white mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            URLs Detected
+                        </h4>
+                        <div id="url-list" class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700 max-h-40 overflow-y-auto">
+                            No URLs found in the email.
+                        </div>
+                    </div>
+                    
+                    <!-- Language Analysis -->
+                    <div id="language-analysis" class="mb-5 hidden">
+                        <h4 class="font-medium text-white mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            Language Analysis
+                        </h4>
+                        <div class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
+                            <div class="flex justify-between items-center">
+                                <span>Original Language: <span id="detected-language" class="font-medium text-white">-</span></span>
+                                <button id="show-translation" class="text-accent hover:text-blue-400 hidden">Show Translation</button>
+                            </div>
+                            <div id="translation-box" class="mt-3 pt-3 border-t border-gray-700 hidden">
+                                <h5 class="font-medium text-white mb-1">Translated Content:</h5>
+                                <p id="translation-text" class="text-gray-300"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Risk Factors -->
+                    <div id="risk-factors" class="hidden">
+                        <h4 class="font-medium text-white mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Risk Factors
+                        </h4>
+                        <div id="risk-list" class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
+                            No specific risk factors detected.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="p-4 border-t border-gray-700 flex justify-between">
+                    <button id="report-button" class="flex items-center gap-1 text-red-400 hover:text-red-300 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Report False Result
+                    </button>
+                    <div>
+                        <button id="copy-result" class="mr-3 text-accent hover:text-blue-400 text-sm">Copy Results</button>
+                        <button id="close-modal-btn" class="bg-accent hover:bg-accentHover text-white py-1.5 px-4 rounded-lg text-sm">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script defer>
         async function predictEmail() {
             const emailText = document.getElementById("emailText").value;
-            const resultDiv = document.getElementById("result");
-            const resultContainer = document.getElementById("result-container");
             const analyzeBtn = document.getElementById("analyze-btn");
             const buttonIcon = document.getElementById("button-icon");
             const buttonText = document.getElementById("button-text");
+            const resultModal = document.getElementById("result-modal");
+            const modalHeader = document.getElementById("modal-header");
+            const resultIcon = document.getElementById("result-icon");
+            const resultTitle = document.getElementById("result-title");
+            const resultAnimation = document.getElementById("result-animation");
+            const resultMessage = document.getElementById("result-message");
+            const resultDescription = document.getElementById("result-description");
+            const urlAnalysis = document.getElementById("url-analysis");
+            const urlListDiv = document.getElementById("url-list");
+            const languageAnalysis = document.getElementById("language-analysis");
+            const detectedLanguageSpan = document.getElementById("detected-language");
+            const showTranslationBtn = document.getElementById("show-translation");
+            const translationBox = document.getElementById("translation-box");
+            const translationText = document.getElementById("translation-text");
+            const riskFactors = document.getElementById("risk-factors");
+            const riskList = document.getElementById("risk-list");
 
             if (!emailText.trim()) {
                 alert("Please enter email text for analysis.");
@@ -149,9 +246,24 @@
             buttonIcon.textContent = "⏳";
             buttonText.textContent = "Analyzing...";
 
-            // แสดง card ผลลัพธ์
-            resultContainer.classList.remove("hidden");
-            resultDiv.innerHTML = "<div class='flex items-center justify-center gap-2'><span class='animate-pulse'>⏳</span><span class='text-blue-400'>Analyzing email content...</span></div>";
+            // แสดง modal ในโหมด loading
+            resultModal.classList.remove("hidden");
+            resultModal.classList.add("animate__fadeIn");
+            
+            // รีเซ็ต modal เป็นสถานะ loading
+            modalHeader.className = "p-4 border-b border-gray-700 flex items-center justify-between bg-gray-800";
+            resultIcon.textContent = "⏳";
+            resultTitle.textContent = "Analysis in Progress";
+            resultAnimation.className = "w-20 h-20 flex items-center justify-center rounded-full bg-gray-700 animate-pulse";
+            resultAnimation.innerHTML = "<span class='text-3xl'>⏳</span>";
+            resultMessage.textContent = "Analyzing...";
+            resultDescription.textContent = "Please wait while we scan your email";
+            
+            // ซ่อนส่วนอื่นๆ
+            urlAnalysis.classList.add("hidden");
+            languageAnalysis.classList.add("hidden");
+            riskFactors.classList.add("hidden");
+            translationBox.classList.add("hidden");
 
             try {
                 const response = await fetch("/predict", {
@@ -163,27 +275,118 @@
                 const data = await response.json();
 
                 if (data.error) {
-                    resultDiv.innerHTML = `<div class='flex items-center justify-center gap-2'><span>❌</span><span class='text-red-400'>Error: ${data.error}</span></div>`;
+                    // กรณีมี error
+                    modalHeader.className = "p-4 border-b border-gray-700 flex items-center justify-between bg-red-900 bg-opacity-30";
+                    resultIcon.textContent = "❌";
+                    resultTitle.textContent = "Error Occurred";
+                    resultAnimation.className = "w-20 h-20 flex items-center justify-center rounded-full bg-red-900 bg-opacity-30";
+                    resultAnimation.innerHTML = "<span class='text-3xl'>❌</span>";
+                    resultMessage.textContent = "Analysis Failed";
+                    resultMessage.className = "text-xl font-bold text-red-400";
+                    resultDescription.textContent = data.error;
                 } else {
+                    // กรณีสำเร็จ
                     const isPhishing = data.prediction.includes("🚨");
-                    const predictionClass = isPhishing ? "text-danger" : "text-success";
-                    const borderClass = isPhishing ? "border-danger" : "border-success";
-                    const bgClass = isPhishing ? "bg-red-900 bg-opacity-20" : "bg-green-900 bg-opacity-20";
-                    const icon = isPhishing ? "🚨" : "✅";
-                    const risk = data.Risk || "No risk information";
                     
-                    resultDiv.className = `p-3 sm:p-4 rounded-xl ${bgClass} border ${borderClass} shadow-lg text-center text-base sm:text-lg font-medium animate__animated animate__fadeIn`;
+                    // ตั้งค่าส่วนหัวและผลลัพธ์หลัก
+                    if (isPhishing) {
+                        modalHeader.className = "p-4 border-b border-gray-700 flex items-center justify-between bg-red-900 bg-opacity-30";
+                        resultIcon.textContent = "🚨";
+                        resultTitle.textContent = "Phishing Detected";
+                        resultAnimation.className = "w-20 h-20 flex items-center justify-center rounded-full bg-red-900 bg-opacity-30";
+                        resultAnimation.innerHTML = "<span class='text-3xl animate__animated animate__pulse'>🚨</span>";
+                        resultMessage.textContent = data.prediction;
+                        resultMessage.className = "text-xl font-bold text-red-400";
+                    } else {
+                        modalHeader.className = "p-4 border-b border-gray-700 flex items-center justify-between bg-green-900 bg-opacity-30";
+                        resultIcon.textContent = "✅";
+                        resultTitle.textContent = "Email Appears Safe";
+                        resultAnimation.className = "w-20 h-20 flex items-center justify-center rounded-full bg-green-900 bg-opacity-30";
+                        resultAnimation.innerHTML = "<span class='text-3xl'>✅</span>";
+                        resultMessage.textContent = data.prediction;
+                        resultMessage.className = "text-xl font-bold text-green-400";
+                    }
                     
-                    resultDiv.innerHTML = `
-                        <div class='flex flex-col items-center justify-center gap-2'>
-                            <span class='text-2xl'>${icon}</span>
-                            <span class='${predictionClass} font-bold'>${data.prediction}</span>
-                            <span class='text-sm text-gray-400'>${risk}</span>
-                        </div>
-                    `;
+                    // แสดงข้อมูลความเสี่ยง
+                    const risk = data.Risk || "No specific risk factors detected";
+                    resultDescription.textContent = risk;
+                    
+                    // แสดง URL analysis ถ้ามี URLs
+                    if (data.urls_found && data.urls_found.length > 0) {
+                        urlAnalysis.classList.remove("hidden");
+                        
+                        // สร้างรายการ URLs
+                        let urlHtml = '';
+                        data.urls_found.forEach(url => {
+                            const isMalicious = data.malicious_urls && data.malicious_urls.includes(url);
+                            const urlClass = isMalicious ? "text-red-400" : "text-blue-400";
+                            const urlIcon = isMalicious ? "🚨" : "🔗";
+                            const warningText = isMalicious ? " <span class='text-red-400 font-medium'>(Suspicious)</span>" : "";
+                            
+                            urlHtml += `<div class="mb-2 break-all flex items-start">
+                                <span class="mr-1">${urlIcon}</span>
+                                <div>
+                                    <span class="${urlClass}">${url}</span>
+                                    ${warningText}
+                                </div>
+                            </div>`;
+                        });
+                        
+                        urlListDiv.innerHTML = urlHtml || "No URLs found in the email.";
+                    }
+                    
+                    // แสดงข้อมูลภาษา
+                    if (data.original_language) {
+                        languageAnalysis.classList.remove("hidden");
+                        detectedLanguageSpan.textContent = data.original_language;
+                        
+                        // ถ้ามีข้อมูลการแปล
+                        if (data.translated_text && data.translated_text !== "N/A") {
+                            showTranslationBtn.classList.remove("hidden");
+                            translationText.textContent = data.translated_text;
+                            
+                            showTranslationBtn.addEventListener("click", function() {
+                                translationBox.classList.toggle("hidden");
+                                showTranslationBtn.textContent = translationBox.classList.contains("hidden") 
+                                    ? "Show Translation" 
+                                    : "Hide Translation";
+                            });
+                        }
+                    }
+                    
+                    // แสดงรายการปัจจัยความเสี่ยง (ถ้ามี)
+                    if (data.risk_factors && data.risk_factors.length > 0) {
+                        riskFactors.classList.remove("hidden");
+                        
+                        let riskHtml = '<ul class="list-disc list-inside space-y-1">';
+                        data.risk_factors.forEach(risk => {
+                            riskHtml += `<li>${risk}</li>`;
+                        });
+                        riskHtml += '</ul>';
+                        
+                        riskList.innerHTML = riskHtml;
+                    } else if (isPhishing) {
+                        // ถ้าเป็น phishing แต่ไม่มี risk factors, แสดงข้อความ default
+                        riskFactors.classList.remove("hidden");
+                        riskList.innerHTML = `<div class="text-yellow-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            This email has been flagged as phishing based on our analysis algorithm.
+                        </div>`;
+                    }
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<div class='flex items-center justify-center gap-2'><span>❌</span><span class='text-red-400'>Failed to connect to the server. Please try again.</span></div>`;
+                // กรณีเกิด error ในการเชื่อมต่อ
+                modalHeader.className = "p-4 border-b border-gray-700 flex items-center justify-between bg-red-900 bg-opacity-30";
+                resultIcon.textContent = "❌";
+                resultTitle.textContent = "Connection Error";
+                resultAnimation.className = "w-20 h-20 flex items-center justify-center rounded-full bg-red-900 bg-opacity-30";
+                resultAnimation.innerHTML = "<span class='text-3xl'>❌</span>";
+                resultMessage.textContent = "Failed to Connect";
+                resultMessage.className = "text-xl font-bold text-red-400";
+                resultDescription.textContent = "Could not connect to the server. Please check your internet connection and try again.";
+                console.error(error);
             } finally {
                 // คืนค่าปุ่มกลับสู่สถานะปกติ
                 setTimeout(() => {
@@ -196,9 +399,64 @@
             }
         }
 
+        // Event Listeners
         document.getElementById('clear-btn').addEventListener('click', function() {
             document.getElementById('emailText').value = '';
             document.getElementById('emailText').focus();
+        });
+
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('result-modal').classList.add("animate__fadeOut");
+            setTimeout(() => {
+                document.getElementById('result-modal').classList.remove("animate__fadeOut");
+                document.getElementById('result-modal').classList.add("hidden");
+            }, 500);
+        });
+
+        document.getElementById('close-modal-btn').addEventListener('click', function() {
+            document.getElementById('result-modal').classList.add("animate__fadeOut");
+            setTimeout(() => {
+                document.getElementById('result-modal').classList.remove("animate__fadeOut");
+                document.getElementById('result-modal').classList.add("hidden");
+            }, 500);
+        });
+
+        document.getElementById('copy-result').addEventListener('click', function() {
+            const resultMessage = document.getElementById('result-message').textContent;
+            const resultDescription = document.getElementById('result-description').textContent;
+            
+            // Create text to copy
+            let copyText = `Analysis Result: ${resultMessage}\n`;
+            copyText += `Risk: ${resultDescription}\n`;
+            
+            // Add URL info if available
+            if (!document.getElementById('url-analysis').classList.contains('hidden')) {
+                copyText += "\nURLs Detected:\n";
+                const urlTexts = document.getElementById('url-list').innerText;
+                copyText += urlTexts + "\n";
+            }
+            
+            // Add language info if available
+            if (!document.getElementById('language-analysis').classList.contains('hidden')) {
+                const language = document.getElementById('detected-language').textContent;
+                copyText += `\nOriginal Language: ${language}\n`;
+            }
+            
+            navigator.clipboard.writeText(copyText)
+                .then(() => {
+                    const copyBtn = document.getElementById('copy-result');
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.textContent = "Copy Results";
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+        });
+
+        document.getElementById('report-button').addEventListener('click', function() {
+            alert("Thank you for your feedback! Our team will review this analysis.");
         });
 
         window.onload = () => {
