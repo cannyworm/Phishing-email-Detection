@@ -16,6 +16,7 @@ from langdetect import detect, DetectorFactory
 from deep_translator import GoogleTranslator
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field
+from schemas import EmailRequest, BatchEmailRequest
 import requests
 
 # ตั้งค่า Logging
@@ -47,14 +48,7 @@ required_sklearn_version = "1.6.1"
 if sklearn.__version__ != required_sklearn_version:
     logger.warning(f"scikit-learn version mismatch! Required: {required_sklearn_version}, Found: {sklearn.__version__}")
 
-# Models
-class EmailRequest(BaseModel):
-    email_text: str = Field(..., description="อีเมลที่ต้องการตรวจสอบ")
 
-class BatchEmailRequest(BaseModel):
-    emails: List[str] = Field(..., description="รายการอีเมลที่ต้องการตรวจสอบ")
-
-# clean text
 def clean_text(text):
     text = str(text).lower()
     text = re.sub(r'\W', ' ', text)
@@ -62,7 +56,6 @@ def clean_text(text):
     text = ' '.join(word for word in text.split() if word not in stop_words)
     return text
 
-# ตรวจจับภาษา
 def detect_language(text):
     try:
         return detect(text[:1000])  # ใช้แค่ 1000 ตัวอักษรแรกเพื่อความเร็ว
@@ -88,7 +81,7 @@ def extract_urls(text):
     return re.findall(url_pattern, text)
 
 def check_url_safety(url):
-    api_key = "AIzaSyCXwc7uusAarQFmMj_aleeMsTCXK5SuzsY"
+    api_key = "api_key"
     gsb_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
     
     payload = {
