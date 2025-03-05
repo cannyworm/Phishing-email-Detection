@@ -1,6 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
+from apscheduler.schedulers.background import BackgroundScheduler
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+import os
+import json
+import logging
 import uvicorn
 import re
 import pickle
@@ -8,25 +15,21 @@ import ssl
 import nltk
 from nltk.corpus import stopwords
 from tensorflow.keras.models import load_model
-import sklearn
-import json
-import logging
+import requests
+from datetime import datetime, timedelta
 from functools import lru_cache
 from langdetect import detect, DetectorFactory
 from deep_translator import GoogleTranslator
 from typing import List, Dict, Any
-from pydantic import BaseModel, Field
-from schemas import EmailRequest, BatchEmailRequest
-import requests
 
-# ตั้งค่า Logging
+# Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ✅ ตั้งค่าให้ langdetect ให้ผลลัพธ์เดิมสำหรับข้อความเดียวกัน
+# Consistent language detection
 DetectorFactory.seed = 0
 
-# ✅ ปิด SSL Verification สำหรับ NLTK
+# SSL Configuration for NLTK
 try:
     _create_unverified_https_context = ssl._create_unverified_context
 except AttributeError:
@@ -34,20 +37,38 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-# โหลด Stopwords (เฉพาะภาษาอังกฤษ)
+# Load stopwords
 nltk.download('stopwords', quiet=True)
 stop_words = set(stopwords.words('english'))
 
-# โหลดโมเดลและ Vectorizer
+# Load models and vectorizer
 model = load_model("my_models/phishing_email_model.h5", compile=False)
 with open("my_models/tfidf_vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
-# ตรวจสอบเวอร์ชันของ scikit-learn
-required_sklearn_version = "1.6.1"
-if sklearn.__version__ != required_sklearn_version:
-    logger.warning(f"scikit-learn version mismatch! Required: {required_sklearn_version}, Found: {sklearn.__version__}")
 
+# Persistent files
+PROCESSED_EMAILS_FILE = "processed_emails.json"
+TOKEN_FILE = "token.json"
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+
+# Utility Functions
+def load_processed_emails():
+    """Load processed email IDs from a persistent file."""
+    if os.path.exists(PROCESSED_EMAILS_FILE):
+        with open(PROCESSED_EMAILS_FILE, 'r') as f:
+            data = json.load(f)
+            # Remove entries older than 7 days to prevent file growth
+            current_time = datetime.now()
+            data = {k: v for k, v in data.items() if 
+                    current_time - datetime.fromisoformat(v) <= timedelta(days=7)}
+            return data
+    return {}
+
+def save_processed_emails(processed_emails):
+    """Save processed email IDs to a persistent file."""
+    with open(PROCESSED_EMAILS_FILE, 'w') as f:
+        json.dump(processed_emails, f)
 
 def clean_text(text):
     text = str(text).lower()
@@ -58,12 +79,11 @@ def clean_text(text):
 
 def detect_language(text):
     try:
-        return detect(text[:1000])  # ใช้แค่ 1000 ตัวอักษรแรกเพื่อความเร็ว
+        return detect(text[:1000])  # Use first 1000 characters for speed
     except Exception as e:
         logger.error(f"Language detection error: {e}")
         return "unknown"
 
-# แปลข้อความเป็นภาษาอังกฤษ
 @lru_cache(maxsize=1000)
 def translate_to_english(text, source_lang):
     if source_lang == "en" or source_lang == "unknown":
@@ -75,13 +95,12 @@ def translate_to_english(text, source_lang):
         logger.error(f"Translation error: {e}")
         return text
 
-# ดึง URL จากข้อความ
 def extract_urls(text):
     url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
     return re.findall(url_pattern, text)
 
 def check_url_safety(url):
-    api_key = "api_key"
+    api_key = "your_google_safe_browsing_api_key"
     gsb_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
     
     payload = {
@@ -95,16 +114,13 @@ def check_url_safety(url):
     }
     try:
         response = requests.post(gsb_url, json=payload, params={"key": api_key})
-        response.raise_for_status()  # ตรวจสอบ HTTP errors
+        response.raise_for_status()
         result = response.json()
-        print(result)
-        # ถ้ามี key "matches" ใน result แสดงว่ามี URL อันตราย
         return "matches" in result
     except requests.RequestException as e:
         logger.error(f"Error checking URL safety for {url}: {e}")
         return False
 
-# อัปเดตการวิเคราะห์อีเมล
 def process_email(email_text: str) -> Dict[str, Any]:
     detected_lang = detect_language(email_text)
     translated_text = email_text if detected_lang == "en" else translate_to_english(email_text, detected_lang)
@@ -112,18 +128,15 @@ def process_email(email_text: str) -> Dict[str, Any]:
     text_vector = vectorizer.transform([cleaned_text]).toarray()
     prediction = float(model.predict(text_vector)[0][0])
     
-    # ดึงและตรวจสอบ URL
     urls = extract_urls(email_text)
     malicious_urls = [url for url in urls if check_url_safety(url)]
     
-    # หากมี Malicious URL ให้จัดว่าเป็น Scam ทันที
     is_scam = len(malicious_urls) > 0 or prediction > 0.7
-    print(f"Prediction: {prediction}, Malicious URLs: {malicious_urls}")
     result = {
-        "original_text": email_text[:100] + "..." if len(email_text) > 100 else email_text,
+        "original_text": email_text[:500] + "..." if len(email_text) > 500 else email_text,
         "translated_text": (
-            translated_text[:100] + "..." 
-            if detected_lang != "en" and len(translated_text) > 100 
+            translated_text[:500] + "..." 
+            if detected_lang != "en" and len(translated_text) > 500 
             else translated_text if detected_lang != "en" 
             else "N/A"
         ),
@@ -144,8 +157,88 @@ analysis_data = {
     "history": []
 }
 
-# สร้าง FastAPI app
+# Create FastAPI app
 app = FastAPI()
+
+def get_gmail_service():
+    """Function to connect to Gmail API"""
+    creds = None
+
+    # Load token if it exists
+    if os.path.exists(TOKEN_FILE):
+        creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+
+    # If no valid token, perform new login
+    if not creds or not creds.valid:
+        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        creds = flow.run_local_server(port=0)
+
+        # Save token for future use
+        with open(TOKEN_FILE, "w") as token:
+            token.write(creds.to_json())
+
+    return build("gmail", "v1", credentials=creds)
+
+def fetch_latest_emails():
+    """Fetch latest emails with improved deduplication"""
+    logging.info("📩 Fetching latest emails...")
+
+    try:
+        # Load previously processed emails
+        processed_emails = load_processed_emails()
+        
+        service = get_gmail_service()
+        results = service.users().messages().list(userId="me", maxResults=5).execute()
+        messages = results.get("messages", [])
+
+        for msg in messages:
+            msg_id = msg["id"]
+
+            # Check if this email has been processed recently
+            if msg_id in processed_emails:
+                continue  # Skip already processed emails
+
+            # Fetch email details
+            msg_detail = service.users().messages().get(userId="me", id=msg_id, format="full").execute()
+            
+            headers = msg_detail["payload"]["headers"]
+            subject = next((h["value"] for h in headers if h["name"] == "Subject"), "No Subject")
+            sender = next((h["value"] for h in headers if h["name"] == "From"), "Unknown Sender")
+            snippet = msg_detail.get("snippet", "No Content")
+
+            logging.info(f"📧 Email from: {sender}, Subject: {subject}")
+            logging.info(f"✉ Snippet: {snippet}")
+
+            # Analyze the email
+            analyze_email(snippet)
+
+            # Save message ID with current timestamp
+            processed_emails[msg_id] = datetime.now().isoformat()
+
+        # Save processed emails list
+        save_processed_emails(processed_emails)
+
+    except Exception as e:
+        logging.error(f"❌ Error fetching emails: {e}")
+
+def analyze_email(email_text):
+    """Send email to API for phishing analysis"""
+    url = "http://localhost:5001/predict"
+    payload = {"email_text": email_text}
+    
+    try:
+        response = requests.post(url, json=payload)
+        result = response.json()
+        logging.info(f"🚨 Email Analysis Result: {result}")
+    except Exception as e:
+        logging.error(f"❌ Error analyzing email: {e}")
+
+# Schedule email fetching job
+scheduler = BackgroundScheduler()
+scheduler.add_job(fetch_latest_emails, "interval", seconds=30)
+scheduler.start()
+
+# Templates configuration
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
@@ -165,7 +258,7 @@ async def predict_email(request: EmailRequest):
 
         result = process_email(email_text)
 
-        # อัปเดตสถิติ
+        # Update statistics
         analysis_data["total_emails"] += 1
         if "Social Engineering Detected" in result["prediction"]:
             analysis_data["phishing_count"] += 1
@@ -173,7 +266,7 @@ async def predict_email(request: EmailRequest):
             analysis_data["normal_count"] += 1
 
         analysis_data["history"].append(result)
-        # เก็บแค่ 1000 รายการล่าสุด
+        # Keep only the 1000 most recent entries
         if len(analysis_data["history"]) > 1000:
             analysis_data["history"] = analysis_data["history"][-1000:]
 
