@@ -1,11 +1,9 @@
-# Email Analysis API Documentation
+# 📧 Email Analysis API Documentation
 
 ## 📝 Overview
-
-This API analyzes email text and predicts whether it contains social engineering or phishing content using a machine learning model.
+This API is designed for analyzing email content and determining whether it contains elements of social engineering or phishing attacks using a machine learning model.
 
 ## 🌍 Base URL
-
 ```
 http://<host>:5001
 ```
@@ -15,55 +13,40 @@ http://<host>:5001
 ## 📌 Endpoints
 
 ### 🏠 1. Home Page
-
 **📍 Endpoint:**
-
 ```
 GET /
 ```
-
 **📝 Description:**
-
-- Serves the home page using Jinja2 template rendering.
+- Renders the home page using Jinja2 templates.
 
 **📤 Response:**
-
 - HTML page
 
 ---
 
 ### 📊 2. Dashboard
-
 **📍 Endpoint:**
-
 ```
 GET /dashboard
 ```
-
 **📝 Description:**
-
-- Displays the analysis dashboard with email classification statistics.
+- Displays an interactive dashboard with email classification statistics.
 
 **📤 Response:**
-
-- HTML page with statistics in JSON format.
+- HTML page containing JSON-based statistical data.
 
 ---
 
 ### 🔍 3. Predict Email Classification
-
 **📍 Endpoint:**
-
 ```
 POST /predict
 ```
-
 **📝 Description:**
-
-- Predicts whether an email contains phishing content.
+- Analyzes email content and predicts if it contains phishing indicators.
 
 **📥 Request Body:**
-
 ```json
 {
   "email_text": "<email content>"
@@ -71,91 +54,87 @@ POST /predict
 ```
 
 **📤 Response:**
-
 ```json
 {
   "original_text": "<original email content>",
   "translated_text": "<translated text if applicable, else 'N/A'>",
   "original_language": "<detected language>",
   "prediction": "🚨 Social Engineering Detected" OR "✅ Normal Message",
-  "Risk": "<percentage risk>",
+  "risk": "<percentage risk>",
   "urls_found": ["<extracted URLs>"],
   "malicious_urls": ["<malicious URLs detected>"]
 }
 ```
 
 **❌ Error Responses:**
-
-- `400 Bad Request`: If no email text is provided.
-- `500 Internal Server Error`: If an error occurs during processing.
+- `400 Bad Request`: Missing email text in request.
+- `500 Internal Server Error`: Unexpected processing failure.
 
 ---
 
-## 🔄 Processing Steps
-
+## 🔄 Processing Workflow
 1. Detects the language of the email text.
-2. Translates it to English if necessary.
-3. Cleans the text by removing special characters and stopwords.
-4. Converts the text into a TF-IDF vector.
-5. Uses a deep learning model to classify the email.
-6. Extracts and checks URLs for potential threats.
-7. Updates the analysis statistics.
+2. Translates content into English if necessary.
+3. Cleans the text by removing stopwords and special characters.
+4. Converts the cleaned text into a TF-IDF vector representation.
+5. Applies a deep learning model for classification.
+6. Extracts and analyzes URLs for potential threats.
+7. Updates classification statistics accordingly.
 
 ---
 
-## 📦 Dependencies
-
-- `FastAPI`
-- `pydantic`
-- `tensorflow`
-- `scikit-learn`
-- `nltk`
-- `langdetect`
-- `deep_translator`
-- `Jinja2`
-- `uvicorn`
-- `requests`
+## 📦 Required Dependencies
+- `FastAPI` (API framework)
+- `pydantic` (data validation)
+- `tensorflow` (deep learning model)
+- `scikit-learn` (ML preprocessing)
+- `nltk` (natural language processing)
+- `langdetect` (language detection)
+- `deep_translator` (translation utilities)
+- `Jinja2` (template rendering)
+- `uvicorn` (ASGI server)
+- `requests` (HTTP requests handling)
 
 ---
 
-## 🔧 การติดตั้ง
+## 🔧 Installation Guide
 ```bash
-# โคลนโปรเจกต์
+# Clone the repository
 git clone https://github.com/apolloS125/phishing-email-detector.git
 cd phishing-email-detector
 
-# สร้างสภาพแวดล้อมเสมือน
+# Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate  # บน Windows ใช้ venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# ติดตั้งแพ็คเกจที่จำเป็น
+# Install dependencies
 pip install -r requirements.txt
 
-# ตรวจสอบเวอร์ชัน scikit-learn
+# Verify scikit-learn installation
 pip show scikit-learn
 ```
 
 ---
 
-## 📂 โครงสร้างไฟล์
+## 📂 Project Directory Structure
 ```
 phishing-email-detector/
-├── main.py                    # แอปพลิเคชันหลัก FastAPI
-├── schemas.py                 # กำหนดโครงสร้างข้อมูลรับเข้า
-├── templates/                 # เทมเพลต HTML
-│   ├── index.html             # หน้าหลัก
-│   ├── dashboard.html         # หน้าแดชบอร์ด
-│   └── history.html           # หน้าประวัติการวิเคราะห์
-├── my_models/                 # โมเดลและเครื่องมือ ML
-│   ├── phishing_email_model.h5  # โมเดล Deep Learning
-│   └── tfidf_vectorizer.pkl     # TF-IDF Vectorizer
-└── requirements.txt            # รายการแพ็คเกจที่จำเป็น
+├── main.py                    # FastAPI main application
+├── schemas.py                 # Pydantic models for request/response validation
+├── templates/                 # HTML template files
+│   ├── index.html             # Home page
+│   ├── dashboard.html         # Dashboard page
+│   └── history.html           # Analysis history
+├── my_models/                 # Machine learning models and preprocessing tools
+│   ├── phishing_email_model.h5  # Trained deep learning model
+│   └── tfidf_vectorizer.pkl     # Pre-trained TF-IDF vectorizer
+└── requirements.txt            # List of required dependencies
 ```
 
 ---
 
-## 🚀 Running the API
-
+## 🚀 Running the API Server
 ```sh
 uvicorn main:app --host 0.0.0.0 --port 5001 --reload
 ```
+
