@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Prediction History | PhishGuard</title>
+    <title>PhishGuard - Email History</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.0.6/tsparticles.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script>
+        // Apply the provided Tailwind configuration
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -23,479 +22,381 @@
             },
         };
     </script>
-    <style>
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-
-        @media (max-width: 768px) {
-            .responsive-table {
-                display: block;
-            }
-
-            .responsive-table .table-row {
-                display: grid;
-                grid-template-columns: 1fr;
-                margin-bottom: 1rem;
-                border: 1px solid rgba(229, 231, 235, 0.5);
-                border-radius: 0.5rem;
-            }
-
-            .responsive-table .table-cell {
-                display: flex;
-                padding: 0.75rem;
-                border-bottom: 1px solid rgba(229, 231, 235, 0.2);
-            }
-
-            .responsive-table .cell-header {
-                font-weight: 600;
-                min-width: 40%;
-                margin-right: 0.5rem;
-            }
-
-            .responsive-table .table-header {
-                display: none;
-            }
-        }
-
-        #tsparticles {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-    </style>
 </head>
-
-<body class="dark bg-darkBg min-h-screen flex flex-col text-darkText">
-    <!-- Particles Background -->
-    <div id="tsparticles"></div>
-
-    <!-- Navigation -->
-    <nav class="sticky top-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-white text-xl font-bold">🛡️ PhishGuard</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <a href="/dashboard" class="flex items-center gap-1 text-sm hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span class="hidden sm:inline">Dashboard</span>
-                </a>
-                <a href="/" class="flex items-center gap-1 text-sm hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="hidden sm:inline">Home</span>
-                </a>
+<body class="bg-gray-50 dark:bg-darkBg min-h-screen transition-colors duration-200">
+    <nav class="bg-blue-600 dark:bg-darkCard text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-xl font-bold flex items-center">
+                🛡️ PhishGuard
+            </a>
+            <div class="flex items-center space-x-6">
+                <a href="/" class="hover:text-blue-200 transition duration-150">Home</a>
+                <a href="/dashboard" class="hover:text-blue-200 transition duration-150">Dashboard</a>
+                <a href="/history" class="border-b-2 border-white font-medium">History</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-1 container mx-auto px-4 py-6">
-        <div class="w-full bg-darkCard shadow-lg rounded-lg p-4 sm:p-6 border border-gray-700">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-                <h1 class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
-                    <span class="text-accent">📜</span> Email Prediction History
-                </h1>
-                <div class="flex mt-2 sm:mt-0">
-                    <input type="text" id="search-input" placeholder="Search emails..."
-                        class="py-1 px-3 pr-10 rounded-lg text-sm bg-gray-800 border border-gray-700">
-                </div>
+    <main class="container mx-auto py-8 px-4">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 dark:text-darkText">Email Analysis History</h1>
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Search emails..." 
+                       class="pl-10 pr-4 py-2 border border-gray-300 dark:border-darkCard rounded-lg 
+                              focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-darkCard
+                              text-gray-900 dark:text-darkText">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
-
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-gray-400 text-sm font-medium">Total Scans</p>
-                            <p class="text-2xl font-bold mt-1" id="totalEmails">0</p>
-                        </div>
-                        <div class="p-2 bg-blue-500 bg-opacity-20 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-gray-400 text-sm font-medium">Phishing Detected</p>
-                            <p class="text-2xl font-bold mt-1" id="phishingEmails">0</p>
-                        </div>
-                        <div class="p-2 bg-red-500 bg-opacity-20 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-gray-400 text-sm font-medium">Normal Messages</p>
-                            <p class="text-2xl font-bold mt-1" id="normalEmails">0</p>
-                        </div>
-                        <div class="p-2 bg-green-500 bg-opacity-20 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-gray-400 text-sm font-medium">Avg. Risk Score</p>
-                            <p class="text-2xl font-bold mt-1" id="avg-risk">-</p>
-                        </div>
-                        <div class="p-2 bg-yellow-500 bg-opacity-20 rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        
+        <div class="bg-white dark:bg-darkCard rounded-lg shadow-md overflow-hidden">
+            {% if not history %}
+            <div class="text-center py-16 px-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No email analysis history found</p>
+                <p class="text-gray-400 dark:text-gray-500 mt-2">Try analyzing some emails first!</p>
+                <a href="/" class="mt-6 inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150">
+                    Go to Email Analyzer
+                </a>
             </div>
-
-            <!-- Table for desktop -->
-            <div class="hidden md:block overflow-x-auto rounded-lg border border-gray-700">
-                <table class="min-w-full divide-y divide-gray-700">
-                    <thead>
-                        <tr class="bg-gray-800">
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Original Text
+            {% else %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-darkCard text-gray-500 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Date/Time
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Original Lang
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Email Preview
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Translated Text
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Language
                             </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Prediction</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Risk</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Result
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Risk Level
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-gray-900 divide-y divide-gray-800" id="history-table">
+                    <tbody class="bg-white dark:bg-darkCard divide-y divide-gray-200 dark:divide-gray-700" id="historyTable">
                         {% for item in history %}
-                        <tr class="hover:bg-gray-800 transition-colors">
-                            <td class="px-4 py-3 text-sm max-w-xs truncate">{{ item.original_text }}</td>
-                            <td class="px-4 py-3 text-sm">{{ item.original_language }}</td>
-                            <td class="px-4 py-3 text-sm max-w-xs truncate">{{ item.translated_text }}</td>
-                            <td class="px-4 py-3 text-sm font-medium">
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if '🚨' in item.prediction %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                        <tr class="email-row hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                <span class="timestamp">{{ item.timestamp }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900 dark:text-darkText max-w-md truncate">{{ item.original_text }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm text-gray-900 dark:text-darkText">{{ item.original_language }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if "Social Engineering Detected" in item.prediction %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
                                     {{ item.prediction }}
                                 </span>
+                                {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    {{ item.prediction }}
+                                </span>
+                                {% endif %}
                             </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="w-full bg-gray-700 rounded-full h-2">
-                                    <div class="{% if item.Risk|float > 80 %}bg-red-500{% elif item.Risk|float > 50 %}bg-yellow-500{% else %}bg-green-500{% endif %} h-2 rounded-full"
-                                        style="width: {{ item.Risk|replace('%', '') }}%"></div>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                <div class="flex items-center">
+                                    <div class="mr-2 w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                        {% set risk = item.Risk|replace("%", "")|float %}
+                                        {% if risk > 70 %}
+                                        <div class="bg-red-600 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        {% elif risk > 30 %}
+                                        <div class="bg-yellow-400 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        {% else %}
+                                        <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        {% endif %}
+                                    </div>
+                                    <span>{{ item.Risk }}</span>
                                 </div>
-                                <span class="text-xs mt-1 inline-block">{{ item.Risk }}</span>
                             </td>
-                            <td class="px-4 py-3 text-sm">
-                                <div class="flex space-x-2">
-                                    <button class="text-indigo-400 hover:text-indigo-300 view-details"
-                                        data-index="{{ loop.index0 }}">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                            viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
-                                </div>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <button 
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-3 py-1 transition duration-150"
+                                    onclick='showEmailDetails({{ item|tojson }})'
+                                >
+                                    View Details
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
-            <!-- Mobile responsive table -->
-            <div class="md:hidden responsive-table" id="mobile-history-table">
-                {% for item in history %}
-                <div class="table-row">
-                    <div class="table-cell">
-                        <div class="cell-header">Original Text:</div>
-                        <div class="truncate">{{ item.original_text }}</div>
-                    </div>
-                    <div class="table-cell">
-                        <div class="cell-header">Original Language:</div>
-                        <div>{{ item.original_language }}</div>
-                    </div>
-                    <div class="table-cell">
-                        <div class="cell-header">Translated Text:</div>
-                        <div class="truncate">{{ item.translated_text }}</div>
-                    </div>
-                    <div class="table-cell">
-                        <div class="cell-header">Prediction:</div>
-                        <div>
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if '🚨' in item.prediction %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                {{ item.prediction }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="table-cell">
-                        <div class="cell-header">Risk:</div>
-                        <div>
-                            <div class="w-full bg-gray-700 rounded-full h-2">
-                                <div class="{% if item.Risk|float > 80 %}bg-red-500{% elif item.Risk|float > 50 %}bg-yellow-500{% else %}bg-green-500{% endif %} h-2 rounded-full"
-                                    style="width: {{ item.Risk|replace('%', '') }}%"></div>
-                            </div>
-                            <span class="text-xs mt-1 inline-block">{{ item.Risk }}</span>
-                        </div>
-                    </div>
-                    <div class="table-cell">
-                        <div class="cell-header">Actions:</div>
-                        <div>
-                            <button class="text-indigo-400 hover:text-indigo-300 view-details"
-                                data-index="{{ loop.index0 }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Email Details Modal -->
-            <div id="email-modal"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-2xl w-full max-h-screen overflow-y-auto mx-4">
-                    <!-- Header -->
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-semibold text-white">Email Details</h3>
-                        <button id="close-modal" class="text-gray-400 hover:text-red-500 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="space-y-5">
-                        <!-- Original Text -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-400 mb-1">Original Text</h4>
-                            <div id="modal-original-text"
-                                class="bg-gray-800 p-4 rounded-lg text-white text-sm break-words shadow-md"></div>
-                        </div>
-
-                        <!-- Original Language & Risk Level -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-400 mb-1">Original Language</h4>
-                                <div id="modal-lang"
-                                    class="bg-gray-800 p-4 rounded-lg text-white text-sm text-center shadow-md"></div>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-400 mb-1">Risk Level</h4>
-                                <div id="modal-risk"
-                                    class="bg-gray-800 p-4 rounded-lg text-white text-sm text-center shadow-md"></div>
-                            </div>
-                        </div>
-
-                        <!-- Translated Text -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-400 mb-1">Translated Text</h4>
-                            <div id="modal-translated-text"
-                                class="bg-gray-800 p-4 rounded-lg text-white text-sm break-words shadow-md"></div>
-                        </div>
-
-                        <!-- Analysis Result -->
-                        <div>
-                            <h4 class="text-sm font-medium text-gray-400 mb-1">Analysis Result</h4>
-                            <div id="modal-prediction" class="bg-gray-800 p-4 rounded-lg text-white text-sm shadow-md">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- No Results Found -->
-            <div id="no-results" class="hidden py-8 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-500 mb-4" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <p class="text-gray-400">No matching email records found</p>
-            </div>
-
-            <!-- Empty State -->
-            {% if history|length == 0 %}
-            <div class="py-10 text-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-500 mb-4" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
-                <h3 class="text-xl font-medium text-gray-300 mb-2">No Email History Yet</h3>
-                <p class="text-gray-400 max-w-md mx-auto">Check emails for phishing threats to start building your
-                    prediction history and analytics.</p>
-                <a href="/"
-                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                    Analyze Email
-                </a>
-            </div>
             {% endif %}
         </div>
     </main>
 
-    <footer class="py-4 text-center text-sm text-gray-500">
-        <p>© 2025 PhishGuard | <a href="#" class="hover:text-accent">Privacy Policy</a></p>
-    </footer>
+    <!-- Email Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-darkCard rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto mx-4">
+            <div class="flex justify-between items-center border-b dark:border-gray-700 p-4">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-darkText">Email Analysis Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- Summary Section -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <div class="flex-1 min-w-max">
+                            <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Analysis Result</h4>
+                            <div id="modal-prediction" class="text-lg font-semibold"></div>
+                        </div>
+                        <div class="flex-1 min-w-max">
+                            <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Risk Level</h4>
+                            <div class="flex items-center">
+                                <div id="modal-risk-bar" class="mr-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                    <div id="modal-risk-indicator" class="h-2.5 rounded-full"></div>
+                                </div>
+                                <span id="modal-risk" class="font-semibold dark:text-darkText"></span>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-max">
+                            <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Date/Time</h4>
+                            <div id="modal-timestamp" class="font-medium dark:text-darkText"></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-4">
+                        <div class="flex-1 min-w-max">
+                            <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Original Language</h4>
+                            <div id="modal-language" class="font-medium dark:text-darkText"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Content Section -->
+                <div class="mb-6">
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Email Content</h4>
+                    <div id="modal-original-text" class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg text-gray-800 dark:text-darkText whitespace-pre-wrap break-words"></div>
+                </div>
+
+                <!-- Translated Content (if applicable) -->
+                <div id="translation-section" class="mb-6 hidden">
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Translated Content (English)</h4>
+                    <div id="modal-translated-text" class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg text-gray-800 dark:text-darkText whitespace-pre-wrap break-words"></div>
+                </div>
+
+                <!-- URLs Section -->
+                <div id="urls-section" class="mb-6">
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Detected URLs</h4>
+                    <div id="modal-urls-empty" class="text-gray-500 dark:text-gray-400 italic">No URLs detected in this email.</div>
+                    <div id="modal-urls-list" class="hidden space-y-2">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-darkBg">
+                                <tr>
+                                    <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">URL</th>
+                                    <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-urls-table" class="bg-white dark:bg-darkCard divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t dark:border-gray-700 p-4 flex justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-150">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Initialize tsParticles
-        document.addEventListener('DOMContentLoaded', function () {
-            tsParticles.load("tsparticles", {
-                particles: {
-                    number: { value: 50 },
-                    color: { value: "#ffffff" },
-                    opacity: { value: 0.5 },
-                    size: { value: 2 },
-                    move: { enable: true, speed: 1 }
+        // Check for user preference and system preference for dark mode
+        function initDarkMode() {
+            // Check for saved preference
+            const darkModeSetting = localStorage.getItem('darkMode');
+            
+            // If user has a saved preference, use that
+            if (darkModeSetting === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else if (darkModeSetting === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                // If no saved preference, check system preference
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('darkMode', 'dark');
+                }
+            }
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('light')) {
+                document.documentElement.classList.remove('light');
+                localStorage.setItem('darkMode', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('darkMode', 'dark');
+            }
+        }
+
+        // Format timestamps
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize dark mode
+            initDarkMode();
+            
+            // Add event listener for dark mode toggle
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            
+            // Format timestamps
+            document.querySelectorAll('.timestamp').forEach(function(element) {
+                const timestamp = element.textContent.trim();
+                try {
+                    const formattedDate = moment(timestamp).format('MMM D, YYYY h:mm A');
+                    element.textContent = formattedDate;
+                } catch (e) {
+                    console.error('Error formatting date:', e);
                 }
             });
         });
 
-        // Store history data for client-side operations
-        const historyData = {{ history| tojson | safe }};
-        const analysisData = {{ analysis_data | safe }};
-
-        // Calculate average risk from history data
-        const calculateAverageRisk = () => {
-            if (historyData.length === 0) return '-';
-            const totalRisk = historyData.reduce((sum, item) => {
-                const riskValue = parseFloat(item.Risk.replace('%', ''));
-                return sum + riskValue;
-            }, 0);
-            return (totalRisk / historyData.length).toFixed(1) + '%';
-        };
-
-        // Set average risk on load
-        document.getElementById('avg-risk').textContent = calculateAverageRisk();
-        document.getElementById('totalEmails').textContent = analysisData.total_emails;
-        document.getElementById('normalEmails').textContent = analysisData.normal_count;
-        document.getElementById('phishingEmails').textContent = analysisData.phishing_count;
-        
         // Search functionality
-        document.getElementById('search-input').addEventListener('input', function (e) {
-            const searchTerm = e.target.value.toLowerCase();
-            let hasResults = false;
-
-            // For desktop table
-            const tableRows = document.querySelectorAll('#history-table tr:not(:first-child)');
-            tableRows.forEach((row, index) => {
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchQuery = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.email-row');
+            
+            rows.forEach(function(row) {
                 const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                    hasResults = true;
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = text.includes(searchQuery) ? '' : 'none';
             });
-
-            // For mobile table
-            const mobileRows = document.querySelectorAll('#mobile-history-table .table-row');
-            mobileRows.forEach((row, index) => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                    hasResults = true;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Show/hide no results message
-            document.getElementById('no-results').style.display = hasResults ? 'none' : 'block';
         });
 
         // Modal functionality
-        const modal = document.getElementById('email-modal');
-        const closeModal = document.getElementById('close-modal');
-
-        // Close modal when clicking the X
-        closeModal.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
+        function showEmailDetails(item) {
+            // Set values in modal
+            const modalPrediction = document.getElementById('modal-prediction');
+            modalPrediction.textContent = item.prediction;
+            
+            // Set classes for prediction
+            if (item.prediction.includes('Social Engineering Detected')) {
+                modalPrediction.className = 'text-lg font-semibold text-red-600 dark:text-red-400';
+            } else {
+                modalPrediction.className = 'text-lg font-semibold text-green-600 dark:text-green-400';
+            }
+            
+            document.getElementById('modal-risk').textContent = item.Risk;
+            
+            // Set risk bar
+            const riskValue = parseFloat(item.Risk.replace('%', ''));
+            const riskBar = document.getElementById('modal-risk-indicator');
+            riskBar.style.width = `${riskValue}%`;
+            
+            if (riskValue > 70) {
+                riskBar.className = 'bg-red-600 h-2.5 rounded-full';
+            } else if (riskValue > 30) {
+                riskBar.className = 'bg-yellow-400 h-2.5 rounded-full';
+            } else {
+                riskBar.className = 'bg-green-500 h-2.5 rounded-full';
+            }
+            
+            // Format and set timestamp
+            try {
+                const formattedDate = moment(item.timestamp).format('MMM D, YYYY h:mm A');
+                document.getElementById('modal-timestamp').textContent = formattedDate;
+            } catch (e) {
+                document.getElementById('modal-timestamp').textContent = item.timestamp;
+            }
+            
+            // Set language
+            document.getElementById('modal-language').textContent = item.original_language;
+            
+            // Set original text
+            document.getElementById('modal-original-text').textContent = item.original_text;
+            
+            // Handle translated text if available
+            const translationSection = document.getElementById('translation-section');
+            if (item.translated_text && item.translated_text !== 'N/A') {
+                translationSection.classList.remove('hidden');
+                document.getElementById('modal-translated-text').textContent = item.translated_text;
+            } else {
+                translationSection.classList.add('hidden');
+            }
+            
+            // Handle URLs
+            const urlsEmpty = document.getElementById('modal-urls-empty');
+            const urlsList = document.getElementById('modal-urls-list');
+            const urlsTable = document.getElementById('modal-urls-table');
+            
+            if (item.urls_found && item.urls_found.length > 0) {
+                urlsEmpty.classList.add('hidden');
+                urlsList.classList.remove('hidden');
+                
+                // Clear previous URLs
+                urlsTable.innerHTML = '';
+                
+                // Add each URL to the table
+                item.urls_found.forEach(url => {
+                    const isMalicious = item.malicious_urls && item.malicious_urls.includes(url);
+                    
+                    const row = document.createElement('tr');
+                    
+                    const urlCell = document.createElement('td');
+                    urlCell.className = 'px-4 py-2 text-sm text-gray-900 dark:text-darkText';
+                    urlCell.textContent = url;
+                    
+                    const statusCell = document.createElement('td');
+                    statusCell.className = 'px-4 py-2 text-sm';
+                    
+                    if (isMalicious) {
+                        statusCell.innerHTML = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">Malicious</span>';
+                    } else {
+                        statusCell.innerHTML = '<span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Safe</span>';
+                    }
+                    
+                    row.appendChild(urlCell);
+                    row.appendChild(statusCell);
+                    urlsTable.appendChild(row);
+                });
+            } else {
+                urlsEmpty.classList.remove('hidden');
+                urlsList.classList.add('hidden');
+            }
+            
+            // Show modal
+            document.getElementById('detailsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        function closeModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+        
+        // Close modal when clicking outside of it
+        document.getElementById('detailsModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
             }
         });
-
-        // View details buttons
-        document.querySelectorAll('.view-details').forEach(button => {
-            button.addEventListener('click', () => {
-                const index = button.getAttribute('data-index');
-                const item = historyData[index];
-
-                document.getElementById('modal-original-text').textContent = item.original_text;
-                document.getElementById('modal-lang').textContent = item.original_language;
-                document.getElementById('modal-translated-text').textContent = item.translated_text;
-
-                const predictionEl = document.getElementById('modal-prediction');
-                predictionEl.textContent = item.prediction;
-                if (item.prediction.includes('🚨')) {
-                    predictionEl.className = 'bg-red-100 text-red-800 p-3 rounded-lg';
-                } else {
-                    predictionEl.className = 'bg-green-100 text-green-800 p-3 rounded-lg';
-                }
-
-                document.getElementById('modal-risk').textContent = item.Risk;
-
-                modal.classList.remove('hidden');
-            });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && !document.getElementById('detailsModal').classList.contains('hidden')) {
+                closeModal();
+            }
         });
     </script>
 </body>
-
 </html>

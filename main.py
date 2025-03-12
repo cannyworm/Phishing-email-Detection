@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import re
 import pickle
@@ -15,18 +16,22 @@ from functools import lru_cache
 from langdetect import detect, DetectorFactory
 from deep_translator import GoogleTranslator
 from typing import List, Dict, Any
-from pydantic import BaseModel, Field
-from schemas import EmailRequest, BatchEmailRequest
+from pydantic import BaseModel
+from schemas import EmailRequest
 import requests
+import firebase_admin
+from firebase_admin import credentials, firestore
+import datetime
 
-# ตั้งค่า Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# ✅ Logging Configuration
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# ✅ ตั้งค่าให้ langdetect ให้ผลลัพธ์เดิมสำหรับข้อความเดียวกัน
+# ✅ Ensure langdetect returns the same result for the same text
 DetectorFactory.seed = 0
 
-# ✅ ปิด SSL Verification สำหรับ NLTK
+# ✅ Disable SSL Verification for NLTK
 try:
     _create_unverified_https_context = ssl._create_unverified_context
 except AttributeError:
@@ -34,36 +39,42 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-# โหลด Stopwords (เฉพาะภาษาอังกฤษ)
-nltk.download('stopwords', quiet=True)
-stop_words = set(stopwords.words('english'))
+# ✅ Download stopwords (English only)
+nltk.download("stopwords", quiet=True)
+stop_words = set(stopwords.words("english"))
 
-# โหลดโมเดลและ Vectorizer
+# ✅ Load Model & Vectorizer
 model = load_model("my_models/phishing_email_model.h5", compile=False)
 with open("my_models/tfidf_vectorizer.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
-# ตรวจสอบเวอร์ชันของ scikit-learn
+# ✅ Check scikit-learn version
 required_sklearn_version = "1.6.1"
 if sklearn.__version__ != required_sklearn_version:
-    logger.warning(f"scikit-learn version mismatch! Required: {required_sklearn_version}, Found: {sklearn.__version__}")
+    logger.warning(
+        f"scikit-learn version mismatch! Required: {required_sklearn_version}, Found: {sklearn.__version__}")
 
+# ✅ Initialize Firebase
+if not firebase_admin._apps:
+    cred = credentials.Certificate(
+        "mini-phishguard-key.json")  # 🔹 Update with your file
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
 
 def clean_text(text):
     text = str(text).lower()
-    text = re.sub(r'\W', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
-    text = ' '.join(word for word in text.split() if word not in stop_words)
-    return text
+    text = re.sub(r"\W", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return " ".join(word for word in text.split() if word not in stop_words)
 
 def detect_language(text):
     try:
-        return detect(text[:1000])  # ใช้แค่ 1000 ตัวอักษรแรกเพื่อความเร็ว
+        return detect(text[:1000])  # Use only the first 1000 characters
     except Exception as e:
         logger.error(f"Language detection error: {e}")
         return "unknown"
 
-# แปลข้อความเป็นภาษาอังกฤษ
 @lru_cache(maxsize=1000)
 def translate_to_english(text, source_lang):
     if source_lang == "en" or source_lang == "unknown":
@@ -75,15 +86,14 @@ def translate_to_english(text, source_lang):
         logger.error(f"Translation error: {e}")
         return text
 
-# ดึง URL จากข้อความ
 def extract_urls(text):
     url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
     return re.findall(url_pattern, text)
 
 def check_url_safety(url):
-    api_key = "api_key"
+    api_key = "api_key"  # Replace with your API Key
     gsb_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
-    
+
     payload = {
         "client": {"clientId": "your-app", "clientVersion": "1.0"},
         "threatInfo": {
@@ -94,57 +104,79 @@ def check_url_safety(url):
         }
     }
     try:
-        response = requests.post(gsb_url, json=payload, params={"key": api_key})
-        response.raise_for_status()  # ตรวจสอบ HTTP errors
+        response = requests.post(
+            gsb_url, json=payload, params={"key": api_key})
+        response.raise_for_status()
         result = response.json()
-        print(result)
-        # ถ้ามี key "matches" ใน result แสดงว่ามี URL อันตราย
         return "matches" in result
     except requests.RequestException as e:
         logger.error(f"Error checking URL safety for {url}: {e}")
         return False
 
-# อัปเดตการวิเคราะห์อีเมล
+# ✅ Process Email Analysis
 def process_email(email_text: str) -> Dict[str, Any]:
     detected_lang = detect_language(email_text)
-    translated_text = email_text if detected_lang == "en" else translate_to_english(email_text, detected_lang)
+    translated_text = email_text if detected_lang == "en" else translate_to_english(
+        email_text, detected_lang)
     cleaned_text = clean_text(translated_text)
     text_vector = vectorizer.transform([cleaned_text]).toarray()
     prediction = float(model.predict(text_vector)[0][0])
-    
-    # ดึงและตรวจสอบ URL
+
+    # ✅ Extract and Check URLs
     urls = extract_urls(email_text)
     malicious_urls = [url for url in urls if check_url_safety(url)]
-    
-    # หากมี Malicious URL ให้จัดว่าเป็น Scam ทันที
+
+    # ✅ Determine Scam Status
     is_scam = len(malicious_urls) > 0 or prediction > 0.7
-    print(f"Prediction: {prediction}, Malicious URLs: {malicious_urls}")
+
     result = {
         "original_text": email_text[:100] + "..." if len(email_text) > 100 else email_text,
-        "translated_text": (
-            translated_text[:100] + "..." 
-            if detected_lang != "en" and len(translated_text) > 100 
-            else translated_text if detected_lang != "en" 
-            else "N/A"
-        ),
+        "translated_text": translated_text if detected_lang != "en" else "N/A",
         "original_language": detected_lang,
         "prediction": "🚨 Social Engineering Detected" if is_scam else "✅ Normal Message",
-        "Risk": "100.00%" if len(malicious_urls) > 0 else f"{round(prediction * 100, 2)}%",
+        "Risk": f"{round(prediction * 100, 2)}%",
         "urls_found": urls,
-        "malicious_urls": malicious_urls
+        "malicious_urls": malicious_urls,
+        "timestamp": datetime.datetime.utcnow().isoformat()
     }
-    
+
     return result
 
-# Data store for dashboard statistics
-analysis_data = {
-    "total_emails": 0,
-    "phishing_count": 0,
-    "normal_count": 0,
-    "history": []
-}
+def save_to_firestore(email_result: dict):
+    try:
+        db.collection("email_analysis").add(email_result)
+        logger.info(f"Stored result in Firestore: {email_result}")
+    except Exception as e:
+        logger.error(f"Error storing result in Firestore: {e}")
 
-# สร้าง FastAPI app
+def get_analytics_data():
+    try:
+        email_analysis = db.collection("email_analysis").order_by(
+            "timestamp", direction=firestore.Query.DESCENDING).stream()
+        history = [doc.to_dict() for doc in email_analysis]
+
+        # Count metrics
+        total_emails = len(history)
+        phishing_count = sum(
+            1 for entry in history if "Social Engineering Detected" in entry.get("prediction", ""))
+        normal_count = total_emails - phishing_count
+
+        return {
+            "total_emails": total_emails,
+            "normal_count": normal_count,
+            "phishing_count": phishing_count,
+            "history": history
+        }
+    except Exception as e:
+        logger.error(f"Error getting analytics data: {e}")
+        return {
+            "total_emails": 0,
+            "normal_count": 0,
+            "phishing_count": 0,
+            "history": []
+        }
+
+#FastAPI App Initialization
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
@@ -154,7 +186,16 @@ async def home(request: Request):
 
 @app.get("/dashboard")
 async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request, "analysis_data": json.dumps(analysis_data)})
+    # Get analytics data for the dashboard
+    analysis_data = get_analytics_data()
+
+    # Convert analysis_data to JSON for the template
+    analysis_json = json.dumps(analysis_data)
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, "analysis_data": analysis_json}
+    )
 
 @app.post("/predict")
 async def predict_email(request: EmailRequest):
@@ -164,18 +205,7 @@ async def predict_email(request: EmailRequest):
             return JSONResponse(content={"error": "No email text provided"}, status_code=400)
 
         result = process_email(email_text)
-
-        # อัปเดตสถิติ
-        analysis_data["total_emails"] += 1
-        if "Social Engineering Detected" in result["prediction"]:
-            analysis_data["phishing_count"] += 1
-        else:
-            analysis_data["normal_count"] += 1
-
-        analysis_data["history"].append(result)
-        # เก็บแค่ 1000 รายการล่าสุด
-        if len(analysis_data["history"]) > 1000:
-            analysis_data["history"] = analysis_data["history"][-1000:]
+        save_to_firestore(result)  # ✅ Save to Firestore
 
         logger.info(f"Processed email: {result['prediction']}")
         return JSONResponse(content=result)
@@ -186,11 +216,13 @@ async def predict_email(request: EmailRequest):
 
 @app.get("/history")
 async def get_history(request: Request):
-    return templates.TemplateResponse("history.html", {
-        "request": request, 
-        "history": analysis_data["history"],
-        "analysis_data": json.dumps(analysis_data)
-    })
+    try:
+        # Get analytics data with history
+        data = get_analytics_data()
+        return templates.TemplateResponse("history.html", {"request": request, "history": data["history"]})
+    except Exception as e:
+        logger.error(f"Error fetching email history: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=5001, reload=True)
