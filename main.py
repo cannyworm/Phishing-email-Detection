@@ -62,11 +62,13 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
+
 def clean_text(text):
     text = str(text).lower()
     text = re.sub(r"\W", " ", text)
     text = re.sub(r"\s+", " ", text)
     return " ".join(word for word in text.split() if word not in stop_words)
+
 
 def detect_language(text):
     try:
@@ -74,6 +76,7 @@ def detect_language(text):
     except Exception as e:
         logger.error(f"Language detection error: {e}")
         return "unknown"
+
 
 @lru_cache(maxsize=1000)
 def translate_to_english(text, source_lang):
@@ -86,9 +89,11 @@ def translate_to_english(text, source_lang):
         logger.error(f"Translation error: {e}")
         return text
 
+
 def extract_urls(text):
     url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
     return re.findall(url_pattern, text)
+
 
 def check_url_safety(url):
     api_key = "api_key"  # Replace with your API Key
@@ -161,10 +166,27 @@ def get_analytics_data():
             1 for entry in history if "Social Engineering Detected" in entry.get("prediction", ""))
         normal_count = total_emails - phishing_count
 
+        # ✅ คำนวณ today_count
+        today = datetime.datetime.utcnow().date()
+        today_count = sum(1 for entry in history if 
+                          "timestamp" in entry and 
+                          datetime.datetime.fromisoformat(entry["timestamp"]).date() == today)
+
+        # ✅ ป้องกันหารด้วยศูนย์
+        if total_emails > 0:
+            normal_percentage = round((normal_count / total_emails) * 100, 2)
+            phishing_percentage = round((phishing_count / total_emails) * 100, 2)
+        else:
+            normal_percentage = 0.0
+            phishing_percentage = 0.0
+
         return {
             "total_emails": total_emails,
             "normal_count": normal_count,
             "phishing_count": phishing_count,
+            "today_count": today_count,
+            "normal_percentage": normal_percentage,  # ✅ เพิ่มเปอร์เซ็นต์
+            "phishing_percentage": phishing_percentage,  # ✅ เพิ่มเปอร์เซ็นต์
             "history": history
         }
     except Exception as e:
@@ -173,10 +195,13 @@ def get_analytics_data():
             "total_emails": 0,
             "normal_count": 0,
             "phishing_count": 0,
+            "today_count": 0,
+            "normal_percentage": 0.0,  # ✅ แก้ไขให้เป็น 0.0 กรณี error
+            "phishing_percentage": 0.0,  # ✅ แก้ไขให้เป็น 0.0 กรณี error
             "history": []
         }
 
-#FastAPI App Initialization
+# FastAPI App Initialization
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
