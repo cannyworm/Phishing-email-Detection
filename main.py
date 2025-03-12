@@ -118,7 +118,6 @@ def check_url_safety(url):
         logger.error(f"Error checking URL safety for {url}: {e}")
         return False
 
-# ✅ Process Email Analysis
 def process_email(email_text: str) -> Dict[str, Any]:
     detected_lang = detect_language(email_text)
     translated_text = email_text if detected_lang == "en" else translate_to_english(
@@ -127,11 +126,10 @@ def process_email(email_text: str) -> Dict[str, Any]:
     text_vector = vectorizer.transform([cleaned_text]).toarray()
     prediction = float(model.predict(text_vector)[0][0])
 
-    # ✅ Extract and Check URLs
     urls = extract_urls(email_text)
     malicious_urls = [url for url in urls if check_url_safety(url)]
 
-    # ✅ Determine Scam Status
+    #Determine Scam Status
     is_scam = len(malicious_urls) > 0 or prediction > 0.7
 
     result = {
@@ -166,13 +164,11 @@ def get_analytics_data():
             1 for entry in history if "Social Engineering Detected" in entry.get("prediction", ""))
         normal_count = total_emails - phishing_count
 
-        # ✅ คำนวณ today_count
         today = datetime.datetime.utcnow().date()
         today_count = sum(1 for entry in history if 
                           "timestamp" in entry and 
                           datetime.datetime.fromisoformat(entry["timestamp"]).date() == today)
 
-        # ✅ ป้องกันหารด้วยศูนย์
         if total_emails > 0:
             normal_percentage = round((normal_count / total_emails) * 100, 2)
             phishing_percentage = round((phishing_count / total_emails) * 100, 2)
@@ -185,8 +181,8 @@ def get_analytics_data():
             "normal_count": normal_count,
             "phishing_count": phishing_count,
             "today_count": today_count,
-            "normal_percentage": normal_percentage,  # ✅ เพิ่มเปอร์เซ็นต์
-            "phishing_percentage": phishing_percentage,  # ✅ เพิ่มเปอร์เซ็นต์
+            "normal_percentage": normal_percentage,
+            "phishing_percentage": phishing_percentage,
             "history": history
         }
     except Exception as e:
@@ -196,13 +192,15 @@ def get_analytics_data():
             "normal_count": 0,
             "phishing_count": 0,
             "today_count": 0,
-            "normal_percentage": 0.0,  # ✅ แก้ไขให้เป็น 0.0 กรณี error
-            "phishing_percentage": 0.0,  # ✅ แก้ไขให้เป็น 0.0 กรณี error
+            "normal_percentage": 0.0,
+            "phishing_percentage": 0.0,
             "history": []
         }
 
 # FastAPI App Initialization
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
@@ -230,7 +228,7 @@ async def predict_email(request: EmailRequest):
             return JSONResponse(content={"error": "No email text provided"}, status_code=400)
 
         result = process_email(email_text)
-        save_to_firestore(result)  # ✅ Save to Firestore
+        save_to_firestore(result)
 
         logger.info(f"Processed email: {result['prediction']}")
         return JSONResponse(content=result)
