@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PhishGuard - Email History</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
-        // Apply the provided Tailwind configuration
+        // Tailwind Configuration
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -16,51 +18,163 @@
                         darkBg: "#0f172a",
                         darkCard: "#1e293b",
                         darkText: "#e2e8f0",
-                        accent: "#ff4c60",
+                        accent: "#3b82f6",
+                        accentHover: "#2563eb",
+                        secondary: "#8b5cf6",
+                        danger: "#ef4444",
+                        success: "#10b981",
                     },
+                    animation: {
+                        fadeIn: "fadeIn 0.5s ease-in-out",
+                        pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 },
+                        },
+                        pulse: {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.5 },
+                        },
+                    },
+                    boxShadow: {
+                        glow: '0 0 15px rgba(59, 130, 246, 0.5)',
+                    }
                 },
             },
         };
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+
+        .shield-pulse {
+            animation: shieldPulse 2s infinite;
+        }
+
+        @keyframes shieldPulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
     <script src="/static/js/history.js" defer></script>
 </head>
+
 <body class="bg-gray-50 dark:bg-darkBg min-h-screen transition-colors duration-200">
-    <nav class="bg-blue-600 dark:bg-darkCard text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-xl font-bold flex items-center">
-                🛡️ PhishGuard
-            </a>
-            <div class="flex items-center space-x-6">
-                <a href="/" class="hover:text-blue-200 transition duration-150">Home</a>
-                <a href="/dashboard" class="hover:text-blue-200 transition duration-150">Dashboard</a>
-                <a href="/history" class="border-b-2 border-white font-medium">History</a>
+    <!-- Navigation -->
+    Fixed PhishGuard Navbar
+    <nav class="fixed top-0 left-0 right-0 glass-effect z-50 px-4 py-3 border-b border-gray-700/50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <span class="text-white text-2xl font-bold flex items-center">
+                        <span class="shield-pulse text-accent mr-2">🛡️</span>
+                        <span
+                            class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">PhishGuard</span>
+                    </span>
+                    <div class="absolute -top-1 -right-3 bg-red-500 text-white text-xs px-1.5 rounded-full">Pro</div>
+                </div>
             </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="hover:text-blue-300 transition duration-150 flex items-center gap-2 text-gray-300">
+                    <i class="fas fa-home text-sm"></i>
+                    <span>หน้าหลัก</span>
+                </a>
+                <a href="/dashboard"
+                    class="hover:text-blue-300 transition duration-150 flex items-center gap-2 text-gray-300">
+                    <i class="fas fa-chart-line text-sm"></i>
+                    <span>แดชบอร์ด</span>
+                </a>
+                <a href="/history" class="border-b-2 border-accent font-medium text-white flex items-center gap-2">
+                    <i class="fas fa-history text-sm"></i>
+                    <span>ประวัติ</span>
+                </a>
+            </div>
+            <button class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
         </div>
     </nav>
 
     <main class="container mx-auto py-8 px-4">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 mt-16">
             <h1 class="text-2xl font-bold text-gray-800 dark:text-darkText">Email Analysis History</h1>
-            <div class="relative">
-                <input type="text" id="searchInput" placeholder="Search emails..." 
-                       class="pl-10 pr-4 py-2 border border-gray-300 dark:border-darkCard rounded-lg 
-                              focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-darkCard
-                              text-gray-900 dark:text-darkText">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="relative flex-grow">
+                    <input type="text" id="searchInput" placeholder="Search emails..." class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-darkCard rounded-lg 
+                                focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-darkCard
+                                text-gray-900 dark:text-darkText">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <div class="flex gap-2">
+                    <select id="filterRisk"
+                        class="bg-white dark:bg-darkCard border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-darkText rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2">
+                        <option value="all">All Risk Levels</option>
+                        <option value="high">High Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="low">Low Risk</option>
+                    </select>
+                    <select id="filterResult"
+                        class="bg-white dark:bg-darkCard border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-darkText rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2">
+                        <option value="all">All Results</option>
+                        <option value="phishing">Phishing</option>
+                        <option value="safe">Safe</option>
+                    </select>
+                </div>
             </div>
         </div>
-        
+
         <div class="bg-white dark:bg-darkCard rounded-lg shadow-md overflow-hidden">
             {% if not history %}
             <div class="text-center py-16 px-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
                 <p class="text-gray-500 dark:text-gray-400 text-lg font-medium">No email analysis history found</p>
                 <p class="text-gray-400 dark:text-gray-500 mt-2">Try analyzing some emails first!</p>
-                <a href="/" class="mt-6 inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150">
+                <a href="/"
+                    class="mt-6 inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150">
                     Go to Email Analyzer
                 </a>
             </div>
@@ -69,8 +183,17 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-darkCard text-gray-500 dark:text-gray-400">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                Date/Time
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onclick="sortTable('date')">
+                                <div class="flex items-center">
+                                    Date/Time
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4 sort-icon" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                    </svg>
+                                </div>
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                 Email Preview
@@ -78,36 +201,98 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                 Language
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                Result
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onclick="sortTable('result')">
+                                <div class="flex items-center">
+                                    Result
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4 sort-icon" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                    </svg>
+                                </div>
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                Risk Level
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                onclick="sortTable('risk')">
+                                <div class="flex items-center">
+                                    Risk Level
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4 sort-icon" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                    </svg>
+                                </div>
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white dark:bg-darkCard divide-y divide-gray-200 dark:divide-gray-700" id="historyTable">
+                    <tbody class="bg-white dark:bg-darkCard divide-y divide-gray-200 dark:divide-gray-700"
+                        id="historyTable">
                         {% for item in history %}
-                        <tr class="email-row hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150">
+                        <tr class="email-row hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150"
+                            data-risk="{{ item.Risk|replace('%', '')|float }}"
+                            data-result="{{ 'phishing' if 'Social Engineering Detected' in item.prediction else 'safe' }}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <span class="timestamp">{{ item.timestamp }}</span>
+                                <span class="relative-time block text-xs mt-1"></span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900 dark:text-darkText max-w-md truncate">{{
+                                    item.original_text }}</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {% if item.urls %}
+                                    <span class="inline-flex items-center mr-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M14.828 14.828a4 4 0 01-5.656 0l-4-4a4 4 0 010-5.656l1.1-1.1" />
+                                        </svg>
+                                        {{ item.urls|length }} URL{% if item.urls|length != 1 %}s{% endif %}
+                                    </span>
+                                    {% endif %}
+                                    <span class="inline-flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 19h18M3 14h18M3 9h18M3 4h18" />
+                                        </svg>
+                                        {{ item.original_text|length }} characters
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900 dark:text-darkText max-w-md truncate">{{ item.original_text }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-gray-900 dark:text-darkText">{{ item.original_language }}</span>
+                                <span class="text-sm text-gray-900 dark:text-darkText">{{ item.original_language
+                                    }}</span>
+                                {% if item.original_language != "English" %}
+                                <span class="block text-xs text-blue-600 dark:text-blue-400 mt-1">(Translated)</span>
+                                {% endif %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 {% if "Social Engineering Detected" in item.prediction %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                <span
+                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                                        </path>
+                                    </svg>
                                     {{ item.prediction }}
                                 </span>
                                 {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                <span
+                                    class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>
                                     {{ item.prediction }}
                                 </span>
                                 {% endif %}
@@ -117,109 +302,229 @@
                                     <div class="mr-2 w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                                         {% set risk = item.Risk|replace("%", "")|float %}
                                         {% if risk > 70 %}
-                                        <div class="bg-red-600 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        <div class="bg-danger h-2.5 rounded-full" style="width: {{ risk }}%"></div>
                                         {% elif risk > 30 %}
-                                        <div class="bg-yellow-400 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        <div class="bg-warning h-2.5 rounded-full" style="width: {{ risk }}%"></div>
                                         {% else %}
-                                        <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ risk }}%"></div>
+                                        <div class="bg-safe h-2.5 rounded-full" style="width: {{ risk }}%"></div>
                                         {% endif %}
                                     </div>
-                                    <span>{{ item.Risk }}</span>
+                                    <span{% if risk> 70 %} class="font-bold text-danger"{% elif risk > 30 %}
+                                        class="font-medium text-warning"{% endif %}>{{ item.Risk }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <button 
-                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-3 py-1 transition duration-150"
-                                    onclick='showEmailDetails({{ item|tojson }})'
-                                >
-                                    View Details
-                                </button>
+                                <div class="flex space-x-2">
+                                    <button
+                                        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded px-3 py-1 transition duration-150 flex items-center"
+                                        onclick='showEmailDetails({{ item|tojson }})'>
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                            </path>
+                                        </svg>
+                                        View
+                                    </button>
+                                    <button
+                                        class="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 border border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded px-3 py-1 transition duration-150 flex items-center"
+                                        title="Export as PDF">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+            <div class="p-4 border-t dark:border-gray-700 flex justify-between items-center">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Showing <span id="visibleCount">{{ history|length }}</span> of <span id="totalCount">{{
+                        history|length }}</span> results
+                </div>
+                <div class="flex space-x-2">
+                    <button id="prevPage"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div id="pagination" class="flex space-x-1">
+                        <button class="px-3 py-1 bg-blue-600 text-white rounded">1</button>
+                        <button
+                            class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">2</button>
+                    </div>
+                    <button id="nextPage"
+                        class="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             {% endif %}
         </div>
     </main>
 
     <!-- Email Details Modal -->
-    <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center hidden">
+    <div id="detailsModal"
+        class="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-50 flex items-center justify-center hidden">
         <div class="bg-white dark:bg-darkCard rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto mx-4">
-            <div class="flex justify-between items-center border-b dark:border-gray-700 p-4">
+            <div
+                class="flex justify-between items-center border-b dark:border-gray-700 p-4 sticky top-0 bg-white dark:bg-darkCard">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-darkText">Email Analysis Details</h3>
-                <button onclick="closeModal()" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button id="exportPdfBtn"
+                        class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150"
+                        title="Export as PDF">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </button>
+                    <button onclick="closeModal()"
+                        class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-150">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="p-6">
                 <!-- Summary Section -->
-                <div class="mb-6">
-                    <div class="flex flex-wrap gap-4 mb-4">
-                        <div class="flex-1 min-w-max">
+                <div class="bg-gray-50 dark:bg-darkBg rounded-lg p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
                             <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Analysis Result</h4>
-                            <div id="modal-prediction" class="text-lg font-semibold"></div>
+                            <div id="modal-prediction" class="text-lg font-semibold flex items-center"></div>
                         </div>
-                        <div class="flex-1 min-w-max">
+                        <div>
                             <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Risk Level</h4>
                             <div class="flex items-center">
-                                <div id="modal-risk-bar" class="mr-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                                <div id="modal-risk-bar"
+                                    class="mr-2 w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                                     <div id="modal-risk-indicator" class="h-2.5 rounded-full"></div>
                                 </div>
                                 <span id="modal-risk" class="font-semibold dark:text-darkText"></span>
                             </div>
                         </div>
-                        <div class="flex-1 min-w-max">
+                        <div>
                             <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Date/Time</h4>
                             <div id="modal-timestamp" class="font-medium dark:text-darkText"></div>
+                            <div id="modal-relative-time" class="text-sm text-gray-500 dark:text-gray-400"></div>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-4">
-                        <div class="flex-1 min-w-max">
-                            <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Original Language</h4>
-                            <div id="modal-language" class="font-medium dark:text-darkText"></div>
+                    <div class="mt-4 pt-4 border-t dark:border-gray-700">
+                        <div class="flex flex-wrap gap-4">
+                            <div>
+                                <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Original Language
+                                </h4>
+                                <div id="modal-language" class="font-medium dark:text-darkText"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">Message Length</h4>
+                                <div id="modal-length" class="font-medium dark:text-darkText"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-1">URLs Detected</h4>
+                                <div id="modal-url-count" class="font-medium dark:text-darkText">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Warning Banner (only shows for phishing emails) -->
+                <div id="warning-banner"
+                    class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded hidden">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium">Warning: This email contains signs of phishing or social
+                                engineering</p>
+                            <ul class="mt-2 text-sm list-disc list-inside" id="warning-reasons">
+                                <!-- Warning reasons will be populated here -->
+                            </ul>
                         </div>
                     </div>
                 </div>
 
                 <!-- Email Content Section -->
                 <div class="mb-6">
-                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Email Content</h4>
-                    <div id="modal-original-text" class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg text-gray-800 dark:text-darkText whitespace-pre-wrap break-words"></div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase">Email Content</h4>
+                        <button id="copy-content"
+                            class="text-blue-600 dark:text-blue-400 text-sm flex items-center hover:underline">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2">
+                                </path>
+                            </svg>
+                            Copy Text
+                        </button>
+                    </div>
+                    <div id="modal-original-text"
+                        class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg text-gray-800 dark:text-darkText whitespace-pre-wrap break-words">
+                    </div>
                 </div>
-
-                <!-- Translated Content (if applicable) -->
-                <div id="translation-section" class="mb-6 hidden">
-                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Translated Content (English)</h4>
-                    <div id="modal-translated-text" class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg text-gray-800 dark:text-darkText whitespace-pre-wrap break-words"></div>
-                </div>
-
-                <!-- URLs Section -->
-                <div id="urls-section" class="mb-6">
+                <!-- URLs Section - only shows if URLs are detected -->
+                <div id="urls-section" class="mb-6 hidden">
                     <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Detected URLs</h4>
-                    <div id="modal-urls-empty" class="text-gray-500 dark:text-gray-400 italic">No URLs detected in this email.</div>
-                    <div id="modal-urls-list" class="hidden space-y-2">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-darkBg">
-                                <tr>
-                                    <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">URL</th>
-                                    <th scope="col" class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modal-urls-table" class="bg-white dark:bg-darkCard divide-y divide-gray-200 dark:divide-gray-700"></tbody>
-                        </table>
+                    <div class="grid grid-cols-1 gap-3" id="modal-urls">
+                        <!-- URLs will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Analysis Details Section -->
+                <div>
+                    <h4 class="text-sm text-gray-500 dark:text-gray-400 uppercase mb-2">Analysis Details</h4>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg">
+                            <h5 class="font-medium text-gray-700 dark:text-gray-300 mb-2">Risk Factors</h5>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300"
+                                id="modal-factors">
+                                <!-- Risk factors will be populated here -->
+                            </ul>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 dark:bg-darkBg rounded-lg">
+                            <h5 class="font-medium text-gray-700 dark:text-gray-300 mb-2">Security Recommendations</h5>
+                            <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300"
+                                id="modal-recommendations">
+                                <!-- Recommendations will be populated here -->
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="border-t dark:border-gray-700 p-4 flex justify-end">
-                <button onclick="closeModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors duration-150">
+                <button onclick="closeModal()"
+                    class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-150">
                     Close
                 </button>
             </div>
         </div>
     </div>
 </body>
-</html>

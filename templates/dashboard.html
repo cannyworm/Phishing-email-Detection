@@ -10,6 +10,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- tsParticles library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tsparticles/2.9.3/tsparticles.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <script>
         // Tailwind Configuration
         tailwind.config = {
@@ -48,6 +50,40 @@
         };
     </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .shield-pulse {
+            animation: shieldPulse 2s infinite;
+        }
+        
+        @keyframes shieldPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
         .card-hover:hover {
             transform: translateY(-5px);
             transition: transform 0.3s ease;
@@ -69,22 +105,40 @@
     <div id="tsparticles"></div>
 
     <!-- Navigation -->
-    <nav class="bg-blue-600 dark:bg-darkCard text-white shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="/" class="text-xl font-bold flex items-center">
-                🛡️ PhishGuard
-            </a>
-            <div class="flex items-center space-x-6">
-                <a href="/" class="hover:text-blue-200 transition duration-150">Home</a>
-                <a href="/dashboard" class="border-b-2 border-white font-medium">Dashboard</a>
-                <a href="/history" class="hover:text-blue-200 transition duration-150">History</a>
+    <nav class="fixed top-0 left-0 right-0 glass-effect z-50 px-4 py-3 border-b border-gray-700/50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <span class="text-white text-2xl font-bold flex items-center">
+                        <span class="shield-pulse text-accent mr-2">🛡️</span> 
+                        <span class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">PhishGuard</span>
+                    </span>
+                    <div class="absolute -top-1 -right-3 bg-red-500 text-white text-xs px-1.5 rounded-full">Pro</div>
+                </div>
             </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="hover:text-blue-300 transition duration-150 flex items-center gap-2">
+                    <i class="fas fa-home text-sm"></i>
+                    <span>หน้าหลัก</span>
+                </a>
+                <a href="/dashboard" class="border-b-2 border-accent font-medium text-white flex items-center gap-2">
+                    <i class="fas fa-chart-line text-sm"></i>
+                    <span>แดชบอร์ด</span>
+                </a>
+                <a href="/history" class="hover:text-blue-300 transition duration-150 flex items-center gap-2">
+                    <i class="fas fa-history text-sm"></i>
+                    <span>ประวัติ</span>
+                </a>
+            </div>
+            <button class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-8">
-        <h2 class="text-3xl font-bold text-darkText mb-8">Email Analysis Dashboard</h2>
+        <h2 class="text-3xl font-bold text-darkText mb-8 mt-16">Email Analysis Dashboard</h2>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

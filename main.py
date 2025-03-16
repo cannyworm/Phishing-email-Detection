@@ -15,8 +15,7 @@ import logging
 from functools import lru_cache
 from langdetect import detect, DetectorFactory
 from deep_translator import GoogleTranslator
-from typing import List, Dict, Any
-from pydantic import BaseModel
+from typing import Dict, Any
 from schemas import EmailRequest
 import requests
 import firebase_admin
@@ -57,7 +56,7 @@ if sklearn.__version__ != required_sklearn_version:
 # ✅ Initialize Firebase
 if not firebase_admin._apps:
     cred = credentials.Certificate(
-        "mini-phishguard-key.json")  # 🔹 Update with your file
+        "mini-phishguard-key.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()

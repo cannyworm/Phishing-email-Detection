@@ -7,13 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        darkBg: "#0f172a",
+                        darkBg: "#0f1729",
                         darkCard: "#1e293b",
                         darkText: "#e2e8f0",
                         accent: "#3b82f6",
@@ -21,10 +22,12 @@
                         secondary: "#8b5cf6",
                         danger: "#ef4444",
                         success: "#10b981",
+                        warning: "#f59e0b"
                     },
                     animation: {
                         fadeIn: "fadeIn 0.5s ease-in-out",
                         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                        float: "float 3s ease-in-out infinite",
                     },
                     keyframes: {
                         fadeIn: {
@@ -35,168 +38,364 @@
                             '0%, 100%': { opacity: 1 },
                             '50%': { opacity: 0.5 },
                         },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
                     },
                     boxShadow: {
                         glow: '0 0 15px rgba(59, 130, 246, 0.5)',
+                        neon: '0 0 5px #fff, 0 0 10px #fff, 0 0 15px #3b82f6, 0 0 20px #3b82f6',
                     }
                 },
             },
         };
     </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        
+        .shield-pulse {
+            animation: shieldPulse 2s infinite;
+        }
+        
+        @keyframes shieldPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
     <script src="/static/js/index.js" defer></script>
 </head>
-<body class="bg-darkBg min-h-screen flex items-center justify-center p-4 relative overflow-hidden text-darkText selection:bg-accent selection:text-white">
+<body class="bg-gradient-to-br from-darkBg to-gray-900 min-h-screen flex items-center justify-center p-4 relative overflow-hidden text-darkText selection:bg-accent selection:text-white">
     <!-- Navbar -->
-    <nav class="fixed top-0 left-0 right-0 bg-darkCard bg-opacity-80 backdrop-blur-lg z-50 px-4 py-3 border-b border-gray-700">
+    <nav class="fixed top-0 left-0 right-0 glass-effect z-50 px-4 py-3 border-b border-gray-700/50">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-white text-xl font-bold">🛡️ PhishGuard</span>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <span class="text-white text-2xl font-bold flex items-center">
+                        <span class="shield-pulse text-accent mr-2">🛡️</span> 
+                        <span class="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">PhishGuard</span>
+                    </span>
+                    <div class="absolute -top-1 -right-3 bg-red-500 text-white text-xs px-1.5 rounded-full">Pro</div>
+                </div>
             </div>
-            <div class="flex items-center space-x-6">
-                <a href="/" class="border-b-2 border-white font-medium">Home</a>
-                <a href="/dashboard" class="hover:text-blue-200 transition duration-150">Dashboard</a>
-                <a href="/history" class="hover:text-blue-200 transition duration-150">History</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/" class="border-b-2 border-accent font-medium text-white flex items-center gap-2">
+                    <i class="fas fa-home text-sm"></i>
+                    <span>หน้าหลัก</span>
+                </a>
+                <a href="/dashboard" class="hover:text-blue-300 transition duration-150 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-sm"></i>
+                    <span>แดชบอร์ด</span>
+                </a>
+                <a href="/history" class="hover:text-blue-300 transition duration-150 flex items-center gap-2">
+                    <i class="fas fa-history text-sm"></i>
+                    <span>ประวัติ</span>
+                </a>
             </div>
+            <button class="md:hidden text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Navigation Menu (hidden by default) -->
+    <div class="fixed inset-0 bg-darkBg bg-opacity-95 z-50 hidden flex-col pt-16 pb-6 px-6 md:hidden">
+        <button class="absolute top-5 right-5 text-white focus:outline-none">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <div class="flex flex-col space-y-4 mt-8">
+            <a href="/" class="text-white py-3 px-4 rounded-lg bg-accent flex items-center gap-3">
+                <i class="fas fa-home"></i>
+                <span>หน้าหลัก</span>
+            </a>
+            <a href="/dashboard" class="text-white py-3 px-4 rounded-lg hover:bg-gray-800 flex items-center gap-3">
+                <i class="fas fa-chart-line"></i>
+                <span>แดชบอร์ด</span>
+            </a>
+            <a href="/history" class="text-white py-3 px-4 rounded-lg hover:bg-gray-800 flex items-center gap-3">
+                <i class="fas fa-history"></i>
+                <span>ประวัติ</span>
+            </a>
+            <a href="/settings" class="text-white py-3 px-4 rounded-lg hover:bg-gray-800 flex items-center gap-3">
+                <i class="fas fa-cog"></i>
+                <span>ตั้งค่า</span>
+            </a>
+        </div>
+        <div class="mt-auto">
+            <div class="bg-gray-800 rounded-lg p-4">
+                <div class="flex items-center gap-3">
+                    <img src="/api/placeholder/40/40" alt="user" class="rounded-full">
+                    <div>
+                        <p class="text-white font-medium">User123</p>
+                        <p class="text-gray-400 text-sm">Pro Account</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Particle Animation -->
     <div id="tsparticles" class="absolute inset-0 -z-10"></div>
 
-    <div class="bg-darkCard p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-lg border border-gray-700 mt-16 sm:mt-0 backdrop-blur-sm bg-opacity-80">
-        <h2 class="text-2xl sm:text-4xl font-extrabold text-white text-center mb-4 sm:mb-6 flex items-center justify-center gap-2 bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
-            <span class="animate__animated animate__fadeIn">🔍 Email Phishing Scanner</span>
-        </h2>
-        
-        <div class="mb-4 text-sm text-center text-gray-400">
-            Paste an email to analyze it for potential phishing threats
+    <!-- Floating Shield Animation -->
+    <div class="fixed top-40 right-10 opacity-20 hidden lg:block">
+        <div class="animate-float">
+            <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#4f46e5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 3"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="glass-effect p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-xl border border-gray-700/50 mt-16 sm:mt-0">
+        <div class="mb-8">
+            <h2 class="text-2xl sm:text-4xl font-bold text-white text-center mb-3 flex items-center justify-center gap-3 bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent text-shadow">
+                <span class="animate__animated animate__fadeIn">🔍 ตรวจจับอีเมลฟิชชิ่ง</span>
+            </h2>
+            
+            <div class="text-sm text-center text-gray-400 max-w-sm mx-auto">
+                วางอีเมลของคุณเพื่อวิเคราะห์ภัยคุกคามที่อาจเกิดขึ้น ด้วย AI ขั้นสูง
+            </div>
         </div>
 
-        <div class="relative">
-            <textarea id="emailText" class="w-full p-3 sm:p-4 border border-gray-600 bg-gray-800 bg-opacity-60 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm sm:text-base" rows="5" placeholder="Paste your email text here..."></textarea>
-            <div class="absolute top-2 right-2">
-                <button id="clear-btn" class="p-1 text-gray-400 hover:text-white" title="Clear text">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+        <!-- Email Upload Options -->
+        <div class="mb-5">
+            <div class="flex space-x-3 text-sm mb-4">
+                <button class="flex-1 bg-accent bg-opacity-20 hover:bg-opacity-30 text-accent py-2 px-3 rounded-lg flex items-center justify-center gap-2 border border-accent/30 transition">
+                    <i class="fas fa-keyboard"></i>
+                    <span>วางข้อความ</span>
+                </button>
+                <button class="flex-1 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 text-gray-300 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition">
+                    <i class="fas fa-file-alt"></i>
+                    <span>อัปโหลดไฟล์</span>
+                </button>
+                <button class="flex-1 bg-gray-800 bg-opacity-50 hover:bg-opacity-70 text-gray-300 py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition">
+                    <i class="fas fa-at"></i>
+                    <span>เชื่อมต่อเมล</span>
                 </button>
             </div>
         </div>
 
-        <button onclick="predictEmail()" id="analyze-btn" class="w-full mt-3 sm:mt-4 bg-accent text-white py-2 sm:py-3 px-4 rounded-xl hover:bg-accentHover transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 font-medium text-sm sm:text-base">
-            <span id="button-icon">🚀</span>
-            <span id="button-text">Analyze Email</span>
-        </button>
+        <div class="relative">
+            <textarea id="emailText" class="w-full p-4 border border-gray-600/70 bg-gray-800/40 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm sm:text-base h-36" placeholder="วางข้อความอีเมลที่ต้องการตรวจสอบ..."></textarea>
+            <div class="absolute top-3 right-3 flex space-x-2">
+                <button id="mic-btn" class="p-1.5 text-gray-400 hover:text-white bg-gray-700/50 rounded-md" title="Voice input">
+                    <i class="fas fa-microphone text-xs"></i>
+                </button>
+                <button id="clear-btn" class="p-1.5 text-gray-400 hover:text-white bg-gray-700/50 rounded-md" title="Clear text">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            
+            <!-- Example emails dropdown -->
+            <div class="absolute bottom-3 left-3">
+                <button class="flex items-center gap-1 text-xs text-accent hover:text-blue-400">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>ดูตัวอย่างอีเมลฟิชชิ่ง</span>
+                </button>
+            </div>
+        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 sm:mt-6">
-            <a href="/dashboard" class="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white py-2 sm:py-3 rounded-xl transition-all shadow-lg text-sm sm:text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                View Dashboard
+        <div class="mt-5 flex space-x-3">
+            <button onclick="predictEmail()" id="analyze-btn" class="flex-1 bg-gradient-to-r from-accent to-blue-700 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-blue-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 font-medium text-base relative overflow-hidden group">
+                <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-accent to-blue-700 group-hover:from-blue-600 group-hover:to-blue-800"></span>
+                <span class="absolute -inset-x-1 bottom-0 h-1 bg-gradient-to-r from-yellow-400 via-blue-500 to-purple-600"></span>
+                <span class="relative flex items-center gap-2">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>ตรวจสอบความปลอดภัย</span>
+                </span>
+            </button>
+            <button class="p-3 bg-gray-700/50 hover:bg-gray-700 text-white rounded-xl transition-all flex items-center justify-center" title="Options">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mt-5">
+            <a href="/dashboard" class="flex flex-col items-center justify-center gap-2 bg-gray-800/50 hover:bg-gray-700/70 text-white py-3 rounded-xl transition-all shadow-lg text-sm">
+                <i class="fas fa-chart-line text-blue-400"></i>
+                <span>แดชบอร์ด</span>
             </a>
-            <a href="/history" class="flex items-center justify-center gap-2 bg-secondary hover:bg-purple-700 text-white py-2 sm:py-3 rounded-xl transition-all shadow-lg text-sm sm:text-base">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                View History
+            <a href="/history" class="flex flex-col items-center justify-center gap-2 bg-gray-800/50 hover:bg-gray-700/70 text-white py-3 rounded-xl transition-all shadow-lg text-sm">
+                <i class="fas fa-history text-purple-400"></i>
+                <span>ประวัติ</span>
+            </a>
+            <a href="/settings" class="flex flex-col items-center justify-center gap-2 bg-gray-800/50 hover:bg-gray-700/70 text-white py-3 rounded-xl transition-all shadow-lg text-sm">
+                <i class="fas fa-cog text-gray-400"></i>
+                <span>ตั้งค่า</span>
             </a>
         </div>
 
-        <div class="mt-6 text-xs text-center text-gray-500">
-            Powered by ML • Analyze emails instantly • 99.8% accuracy
+        <div class="mt-6 px-4 py-3 bg-blue-900/20 border border-blue-800/30 rounded-lg flex items-start gap-3">
+            <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+            <div class="text-xs text-gray-300">
+                <p>เครื่องมือนี้สามารถตรวจจับการหลอกลวงได้ด้วยความแม่นยำ 99.8% โดยใช้ AI ขั้นสูง</p>
+            </div>
         </div>
     </div>
 
     <!-- Modal Result -->
     <div id="result-modal" class="fixed inset-0 z-50 hidden animate__animated">
-        <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-70 backdrop-blur-sm"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl p-4">
-            <div class="bg-darkCard rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
+            <div class="glass-effect rounded-2xl shadow-2xl border border-gray-700/50 overflow-hidden">
                 <!-- Modal Header -->
-                <div id="modal-header" class="p-4 border-b border-gray-700 flex items-center justify-between">
+                <div id="modal-header" class="p-4 border-b border-gray-700/50 flex items-center justify-between">
                     <h3 class="text-xl font-bold text-white flex items-center gap-2">
                         <span id="result-icon">⏳</span>
-                        <span id="result-title">Analysis Result</span>
+                        <span id="result-title">ผลการวิเคราะห์</span>
                     </h3>
                     <button id="close-modal" class="text-gray-400 hover:text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
                 
                 <!-- Modal Body -->
                 <div class="p-5">
+                    <!-- Progress Bar -->
+                    <div id="analysis-progress" class="mb-6">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>กำลังวิเคราะห์...</span>
+                            <span>67%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full progress-bar" style="width: 67%"></div>
+                        </div>
+                    </div>
+
                     <!-- Main Result -->
-                    <div id="result-main" class="mb-6 p-4 rounded-xl bg-gray-800 bg-opacity-60 border border-gray-700">
+                    <div id="result-main" class="mb-6 p-5 rounded-xl bg-gray-800/60 border border-gray-700/70 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500"></div>
                         <div class="flex flex-col items-center justify-center gap-3 text-center">
-                            <div id="result-animation" class="w-20 h-20 flex items-center justify-center rounded-full bg-gray-700 animate-pulse">
-                                <span class="text-3xl">⏳</span>
+                            <div id="result-animation" class="w-20 h-20 flex items-center justify-center rounded-full bg-gray-700/50 border border-gray-600">
+                                <span class="text-3xl animate-pulse">⏳</span>
                             </div>
-                            <h4 id="result-message" class="text-xl font-bold text-white">Analyzing...</h4>
-                            <p id="result-description" class="text-gray-400 text-sm">Please wait while we scan your email</p>
+                            <h4 id="result-message" class="text-xl font-bold text-white">กำลังวิเคราะห์...</h4>
+                            <p id="result-description" class="text-gray-400 text-sm">โปรดรอสักครู่ขณะที่เราตรวจสอบอีเมลของคุณ</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Threat Score -->
+                    <div class="mb-5 p-4 rounded-xl bg-gray-800/40 border border-gray-700/50">
+                        <h4 class="font-medium text-white mb-3">คะแนนความเสี่ยง</h4>
+                        <div class="flex items-center">
+                            <div class="w-full bg-gray-700 rounded-full h-4">
+                                <div class="bg-gradient-to-r from-green-500 to-yellow-500 h-4 rounded-full" style="width: 35%"></div>
+                            </div>
+                            <span class="ml-3 font-bold text-white">35%</span>
+                        </div>
+                        <div class="mt-2 flex justify-between text-xs text-gray-400">
+                            <span>ความเสี่ยงต่ำ</span>
+                            <span>ความเสี่ยงปานกลาง</span>
+                            <span>ความเสี่ยงสูง</span>
                         </div>
                     </div>
                     
                     <!-- URL Analysis -->
-                    <div id="url-analysis" class="mb-5 hidden">
+                    <div id="url-analysis" class="mb-5">
                         <h4 class="font-medium text-white mb-2 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            URLs Detected
+                            <i class="fas fa-link text-blue-400"></i>
+                            URL ที่ตรวจพบ
                         </h4>
-                        <div id="url-list" class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700 max-h-40 overflow-y-auto">
-                            No URLs found in the email.
+                        <div id="url-list" class="text-sm bg-gray-800/40 rounded-lg p-3 border border-gray-700/50 max-h-40 overflow-y-auto">
+                            <div class="p-2 border-b border-gray-700/50 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                                    <span class="text-gray-300">example.com/login/secure</span>
+                                </div>
+                                <span class="text-yellow-500 text-xs px-2 py-0.5 bg-yellow-500/20 rounded-full">น่าสงสัย</span>
+                            </div>
+                            <div class="p-2 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                    <span class="text-gray-300">google.com</span>
+                                </div>
+                                <span class="text-green-500 text-xs px-2 py-0.5 bg-green-500/20 rounded-full">ปลอดภัย</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Language Analysis -->
-                    <div id="language-analysis" class="mb-5 hidden">
+                    <div id="language-analysis" class="mb-5">
                         <h4 class="font-medium text-white mb-2 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                            </svg>
-                            Language Analysis
+                            <i class="fas fa-language text-purple-400"></i>
+                            การวิเคราะห์ภาษา
                         </h4>
-                        <div class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
+                        <div class="text-sm bg-gray-800/40 rounded-lg p-3 border border-gray-700/50">
                             <div class="flex justify-between items-center">
-                                <span>Original Language: <span id="detected-language" class="font-medium text-white">-</span></span>
-                                <button id="show-translation" class="text-accent hover:text-blue-400 hidden">Show Translation</button>
+                                <span>ภาษาต้นฉบับ: <span id="detected-language" class="font-medium text-white">อังกฤษ</span></span>
+                                <button id="show-translation" class="text-accent hover:text-blue-400 flex items-center gap-1 text-xs">
+                                    <i class="fas fa-language"></i>
+                                    แสดงคำแปล
+                                </button>
                             </div>
-                            <div id="translation-box" class="mt-3 pt-3 border-t border-gray-700 hidden">
-                                <h5 class="font-medium text-white mb-1">Translated Content:</h5>
-                                <p id="translation-text" class="text-gray-300"></p>
+                            <div id="translation-box" class="mt-3 pt-3 border-t border-gray-700/50">
+                                <h5 class="font-medium text-white mb-1">เนื้อหาที่แปลแล้ว:</h5>
+                                <p id="translation-text" class="text-gray-300">เรียนลูกค้า บัญชีของคุณจะถูกระงับ กรุณาคลิกที่ลิงก์ด้านล่างเพื่อยืนยันข้อมูลของคุณ</p>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Risk Factors -->
-                    <div id="risk-factors" class="hidden">
+                    <div id="risk-factors">
                         <h4 class="font-medium text-white mb-2 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            Risk Factors
+                            <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                            ปัจจัยเสี่ยง
                         </h4>
-                        <div id="risk-list" class="text-sm bg-gray-800 bg-opacity-60 rounded-lg p-3 border border-gray-700">
-                            No specific risk factors detected.
+                        <div id="risk-list" class="text-sm bg-gray-800/40 rounded-lg p-3 border border-gray-700/50">
+                            <div class="flex items-start gap-2 mb-2 pb-2 border-b border-gray-700/50">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-white font-medium">การขอข้อมูลส่วนตัว</p>
+                                    <p class="text-gray-400">อีเมลนี้พยายามขอข้อมูลส่วนตัวหรือข้อมูลการเงิน</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle text-yellow-500 mt-0.5"></i>
+                                <div>
+                                    <p class="text-white font-medium">URL น่าสงสัย</p>
+                                    <p class="text-gray-400">พบ URL ที่อาจเป็นอันตรายในเนื้อหาอีเมล</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Modal Footer -->
-                <div class="p-4 border-t border-gray-700 flex justify-between">
-                    <button id="report-button" class="flex items-center gap-1 text-red-400 hover:text-red-300 text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        Report False Result
+                <div class="p-4 border-t border-gray-700/50 grid grid-cols-2 gap-4"></div>
+                    <button id="report-button" class="flex items-center gap-2 text-red-400 hover:text-red-300 text-sm">
+                        <i class="fas fa-flag"></i>
+                        รายงานผลผิดพลาด
                     </button>
-                    <div>
-                        <button id="copy-result" class="mr-3 text-accent hover:text-blue-400 text-sm">Copy Results</button>
-                        <button id="close-modal-btn" class="bg-accent hover:bg-accentHover text-white py-1.5 px-4 rounded-lg text-sm">Close</button>
+                    <div class="flex justify-end space-x-3"></div>
+                        <button id="share-result" class="bg-gray-700 hover:bg-gray-600 text-white py-1.5 px-4 rounded-lg text-sm flex items-center gap-2"></button>
+                            <i class="fas fa-share-alt"></i>
+                            แชร์
+                        </button>
+                        <button id="close-modal-btn" class="bg-accent hover:bg-accentHover text-white py-1.5 px-4 rounded-lg text-sm">ปิด</button>
                     </div>
                 </div>
             </div>
