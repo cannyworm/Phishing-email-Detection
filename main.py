@@ -92,28 +92,43 @@ def extract_urls(text):
     return re.findall(url_pattern, text)
 
 
-def check_url_safety(url):
-    api_key = "api_key"  # Replace with your API Key
+def check_url_safety(urls):
+    if not urls:
+        return {}
+    
+    api_key = "api_key"
     gsb_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
-
+    
+    entries = [{"url": url} for url in urls]
     payload = {
         "client": {"clientId": "your-app", "clientVersion": "1.0"},
         "threatInfo": {
             "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
             "platformTypes": ["ANY_PLATFORM"],
             "threatEntryTypes": ["URL"],
-            "threatEntries": [{"url": url}]
+            "threatEntries": entries
         }
     }
+    
+    results = {}
     try:
-        response = requests.post(
-            gsb_url, json=payload, params={"key": api_key})
+        response = requests.post(gsb_url, json=payload, params={"key": api_key})
         response.raise_for_status()
         result = response.json()
-        return "matches" in result
+        
+        # Mark all URLs as safe initially
+        for url in urls:
+            results[url] = False
+            
+        # Mark matched URLs as unsafe
+        if "matches" in result:
+            for match in result["matches"]:
+                results[match["threat"]["url"]] = True
+                
     except requests.RequestException as e:
-        logger.error(f"Error checking URL safety for {url}: {e}")
-        return False
+        logger.error(f"Error checking URLs safety: {e}")
+        
+    return results
 
 def process_email(email_text: str) -> Dict[str, Any]:
     detected_lang = detect_language(email_text)
