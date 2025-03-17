@@ -1,3 +1,9 @@
-dataset
-__pycache__
+__pycache__/
+dataset/
 *.json
+*.csv
+*.pkl
+*.h5
+*.hdf5
+*.log
+*.txt
