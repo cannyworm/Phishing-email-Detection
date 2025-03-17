@@ -61,13 +61,19 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
+# Pre-compile regex patterns
+URL_PATTERN = re.compile(r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+")
+CLEAN_TEXT_PATTERN1 = re.compile(r"\W")
+CLEAN_TEXT_PATTERN2 = re.compile(r"\s+")
 
 def clean_text(text):
     text = str(text).lower()
-    text = re.sub(r"\W", " ", text)
-    text = re.sub(r"\s+", " ", text)
+    text = CLEAN_TEXT_PATTERN1.sub(" ", text)
+    text = CLEAN_TEXT_PATTERN2.sub(" ", text)
     return " ".join(word for word in text.split() if word not in stop_words)
 
+def extract_urls(text):
+    return URL_PATTERN.findall(text)
 
 def detect_language(text):
     try:
@@ -86,11 +92,6 @@ def translate_to_english(text, source_lang):
     except Exception as e:
         logger.error(f"Translation error: {e}")
         return text
-
-def extract_urls(text):
-    url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
-    return re.findall(url_pattern, text)
-
 
 def check_url_safety(urls):
     if not urls:
