@@ -76,8 +76,7 @@ def detect_language(text):
         logger.error(f"Language detection error: {e}")
         return "unknown"
 
-
-@lru_cache(maxsize=1000)
+@lru_cache(maxsize=10000)
 def translate_to_english(text, source_lang):
     if source_lang == "en" or source_lang == "unknown":
         return text
@@ -87,7 +86,6 @@ def translate_to_english(text, source_lang):
     except Exception as e:
         logger.error(f"Translation error: {e}")
         return text
-
 
 def extract_urls(text):
     url_pattern = r"https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+"
