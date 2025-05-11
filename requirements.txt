@@ -8,3 +8,6 @@ deep-translator
 jinja2
 pydantic
 requests
+httpx
+numpy
+pandas

@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  phishing-email-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phishing_email_api
+    ports:
+      - "5001:5001"
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - .:/app
