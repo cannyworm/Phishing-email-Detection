@@ -1,7 +1,7 @@
 # Email Analysis API Documentation
 
 ## Overview
-This API is designed for analyzing email content and determining whether it contains elements of social engineering or phishing attacks using a machine learning model
+This API analyzes email content to detect signs of social engineering or phishing attacks using a machine learning model. The associated website serves as a demonstration example.
 
 This project is part of the 241-202 Machine Learning II.
 
