@@ -11,7 +11,7 @@ env/
 *.sublime-project
 *.sublime-workspace
 # Ignore Python environment files
-*.env
+?.env
 # Ignore data files
 dataset/
 *.json
